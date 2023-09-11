@@ -1,5 +1,5 @@
 import 'package:bottom_navy_bar/bottom_navy_bar.dart';
-import 'package:pfe_block/auth_api.dart';
+// import 'package:pfe_block/auth_api.dart';
 import 'package:pfe_block/pages/contribuable/commercePage.dart';
 import 'package:pfe_block/pages/contribuable/profilePage.dart';
 import 'package:flutter/material.dart';
@@ -33,11 +33,7 @@ class ContribuableScreenState extends State<ContribuableScreen> {
     return Scaffold(
       appBar: AppBar(
           actions: [
-            IconButton(
-                onPressed: () {
-                  signOut();
-                },
-                icon: Icon(Icons.logout_outlined))
+            IconButton(onPressed: () {}, icon: Icon(Icons.logout_outlined))
           ],
           backgroundColor: Colors.cyan,
           title: Center(child: Text(listPageNames[_currentIndex]))),

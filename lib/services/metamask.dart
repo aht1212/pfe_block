@@ -1,44 +1,172 @@
-import 'package:flutter_web3/flutter_web3.dart';
+import 'dart:ui';
 
-class MetaMaskProvider {
-  static const operatingChain = 1;
+import 'package:flutter/material.dart';
+import 'package:walletconnect_dart/walletconnect_dart.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
-  String currentAddress = '';
+class MatamaskScreen extends StatefulWidget {
+  const MatamaskScreen({Key? key}) : super(key: key);
+  static const String routeName = '/matamask-screen';
 
-  int currentChain = -1;
+  @override
+  State<MatamaskScreen> createState() => _MatamaskScreenState();
+}
 
-  bool _isEnabled = false;
+class _MatamaskScreenState extends State<MatamaskScreen> {
+  var connector = WalletConnect(
+      bridge: 'https://bridge.walletconnect.org',
+      clientMeta: const PeerMeta(
+          name: 'My App',
+          description: 'An app for converting pictures to NFT',
+          url: 'https://walletconnect.org',
+          icons: [
+            'https://files.gitbook.com/v0/b/gitbook-legacy-files/o/spaces%2F-LJJeCjcLrr53DcT1Ml7%2Favatar.png?alt=media'
+          ]));
 
-  bool get isEnabled => _isEnabled;
+  var _session, _uri, _signature, session;
 
-  bool get isInOperatingChain => currentChain == operatingChain;
-
-  bool get isConnected => isEnabled && currentAddress.isNotEmpty;
-
-  Future<void> connect() async {
-    if (_isEnabled) {
-      final accs = await ethereum!.requestAccount();
-      if (accs.isNotEmpty) currentAddress = accs.first;
-
-      currentChain = await ethereum!.getChainId();
+  loginUsingMetamask(BuildContext context) async {
+    if (!connector.connected) {
+      try {
+        session = await connector.createSession(onDisplayUri: (uri) async {
+          _uri = uri;
+          await launchUrlString(uri, mode: LaunchMode.externalApplication);
+        });
+        print(session.accounts[0]);
+        setState(() {
+          _session = session;
+        });
+      } catch (exp) {
+        print(exp);
+      }
     }
   }
 
-  clear() {
-    currentAddress = '';
-    currentChain = -1;
+  @override
+  Widget build(BuildContext context) {
+    connector.on(
+        'connect',
+        (session) => setState(
+              () {
+                _session = _session;
+              },
+            ));
+    connector.on(
+        'session_update',
+        (payload) => setState(() {
+              _session = payload;
+              print(_session.accounts[0]);
+              print(_session.chainId);
+            }));
+    connector.on(
+        'disconnect',
+        (payload) => setState(() {
+              _session = null;
+            }));
+    return Scaffold(
+        body: (_session == null)
+            ? Stack(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('assets/background.jpg'),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  SafeArea(
+                      child: Column(
+                    children: [
+                      SizedBox(
+                        height: 20,
+                      ),
+                      Text(
+                        'Connect to Metamask',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      Spacer(),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                            child: Container(
+                              height: 200,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(40),
+                              ),
+                              child: Column(
+                                children: <Widget>[
+                                  SizedBox(
+                                    height: 20,
+                                  ),
+                                  Text(
+                                    'MetaMask',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'You can login your metamask wallet or create your wallet from here',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  ElevatedButton(
+                                    onPressed: () =>
+                                        loginUsingMetamask(context),
+                                    child: Text(
+                                      'Create Wallet',
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 100,
+                      )
+                    ],
+                  ))
+                ],
+              )
+            : Nextscreenui(
+                walletaddress: session.accounts[0].toString(),
+              ));
   }
+}
 
-  init() {
-   dynamic  isAvailable = ethereum!.isConnected(); 
-      _isEnabled = isAvailable;
-    
+class Nextscreenui extends StatelessWidget {
+  final String walletaddress;
+  const Nextscreenui({Key? key, required this.walletaddress}) : super(key: key);
 
-    ethereum!.onAccountsChanged((accounts) {
-      clear();
-    });
-    ethereum!.onChainChanged((accounts) {
-      clear();
-    });
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Text('Wallet address is'),
+          Text(walletaddress),
+        ],
+      ),
+    );
   }
 }

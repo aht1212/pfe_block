@@ -2,7 +2,7 @@
 import 'package:web3dart/web3dart.dart';
 
 class Contribuable {
-  int id;
+  int? id;
   EthereumAddress ethAddress;
   String nom;
   String prenom;
@@ -11,7 +11,7 @@ class Contribuable {
   int telephone;
 
   Contribuable({
-    required this.id,
+     this.id,
     required this.ethAddress,
     required this.nom,
     required this.prenom,

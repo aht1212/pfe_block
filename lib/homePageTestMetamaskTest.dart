@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_web3/flutter_web3.dart';
+import 'package:pfe_block/home_page.dart';
 import 'package:pfe_block/model/agent_model.dart';
 import 'package:pfe_block/services/tax_management_service.dart';
 import 'package:web3dart/web3dart.dart';
+
+import 'model/commerce_model.dart';
+import 'model/contribuable_model.dart';
+import 'model/typeCommerce_model.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key}) : super(key: key);
@@ -20,70 +25,31 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     _checkConnection();
+    _patenteManagement.setup();
   }
 
   Future<void> _checkConnection() async {
-    try {
+    if (ethereum == null) {
+      print("connecter Metamask! ");
+    } else {
       final isConnected = ethereum!.isConnected();
       final test = isConnected ? await ethereum!.requestAccount() : null;
-
       setState(() {
         _isConnected = isConnected;
         addressConnected = isConnected ? test!.first : "";
       });
-    } catch (e) {
-      showAboutDialog(context: context, children: [Text("Error : $e")]);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    ethereum!.onDisconnect((error) {
+      setState(() {
+        _checkConnection();
+      });
+    });
     return _isConnected
-        ? Scaffold(
-            appBar: AppBar(
-              leading: IconButton(
-                  onPressed: () async {
-                    ethereum!.removeAllListeners();
-                  },
-                  icon: Icon(Icons.logout_outlined)),
-            ),
-            floatingActionButton: FloatingActionButton(
-              onPressed: () async {
-                await _patenteManagement.ajouterAgent(
-                    Agent(
-                        // id: 0,
-                        ethAddress: EthereumAddress.fromHex(
-                            "0xFF95aBDc67003C0Ef7fedb95BfAFf9e0d38357BA"),
-                        nom: "Dupont",
-                        prenom: "Jean",
-                        adresse: "1 Rue du commerce ",
-                        email: "test@email.com",
-                        telephone: 909092882),
-                    EthereumAddress.fromHex(addressConnected));
-              },
-              child: Icon(Icons.add),
-            ),
-            body: Column(
-              children: [
-                Center(
-                  child: Text(
-                    'Addresse : ${addressConnected}',
-                    style: TextStyle(fontSize: 24),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    await _patenteManagement.getAgentAjouteEvents();
-                    await _patenteManagement.getCommerceAjouteEvents();
-
-                    await _patenteManagement.getContribuableAjouteEvents();
-
-                    await _patenteManagement.getTypeCommerceAjouteEvents();
-                  },
-                  child: Text('Se connecter à MetaMask'),
-                )
-              ],
-            ))
+        ? MyHomeRealPage(addressConnected: addressConnected)
         : Scaffold(
             body: ElevatedButton(
             onPressed: () async {

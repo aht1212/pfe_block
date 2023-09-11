@@ -75,13 +75,14 @@ class _AdminPageState extends State<AdminPage> {
     return Container(
       height: MediaQuery.of(context).size.height,
       decoration: BoxDecoration(
-          border: Border(
-            right: BorderSide(
-              color: Colors.grey[800]!,
-              width: 1,
-            ),
+        border: Border(
+          right: BorderSide(
+            color: Colors.grey[800]!,
+            width: 1,
           ),
-          color: const Color(0xFF171821)),
+        ),
+        // color: const Color(0xFF171821)
+      ),
       child: Padding(
         padding: const EdgeInsets.all(15.0),
         child: SingleChildScrollView(

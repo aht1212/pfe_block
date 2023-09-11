@@ -1,76 +1,91 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pfe_block/pages/admin_screen.dart';
 import 'package:pfe_block/pages/agent_page.dart';
 import 'package:pfe_block/pages/contribuable_page.dart';
 import 'package:flutter/material.dart';
+import 'package:pfe_block/services/tax_management_service.dart';
+import 'package:web3dart/web3dart.dart';
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({
+class MyHomeRealPage extends StatefulWidget {
+  const MyHomeRealPage({
     super.key,
+    required this.addressConnected,
   });
-
+  final String addressConnected;
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<MyHomeRealPage> createState() => _MyHomeRealPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  Stream<QuerySnapshot> userSnapshot =
-      FirebaseFirestore.instance.collection("users").snapshots();
+class _MyHomeRealPageState extends State<MyHomeRealPage> {
+  PatenteManagement patenteManagem = PatenteManagement();
+  String userType = "";
+  late Future<String> typeUser;
 
-  final user = FirebaseAuth.instance.currentUser!;
+  // @override
+  // void initState() {
+  //   // TODO: implement initState
+  //   super.initState();
+  //   // getUserType();
+  // }
+
+  Future<String> getUserType() async {
+    EthereumAddress address = EthereumAddress.fromHex(widget.addressConnected);
+    String result = await patenteManagem.getTypeUtilisateur(address);
+    setState(() {
+      userType = result;
+    });
+    // print(userType);
+    return result;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-        stream: userSnapshot,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            final data = snapshot.requireData;
+    return Column(
+      children: [
+        Expanded(
+          child: FutureBuilder(
+              future: getUserType(),
+              builder: (context, AsyncSnapshot<dynamic> snapshot) {
+                if (snapshot.hasData) {
+                  final String data = snapshot.requireData;
 
-            String? userType;
+                  userType = data;
 
-            userType =
-                data.docs.where((e) => e['email'] == user.email).first['type'];
-
-            if (userType == "Contribuable") {
-              // Interface spécifique au contribuable
-              return ContribuableScreen();
-              // ... Ajoutez ici les widgets spécifiques au contribuable
-            } else if (userType == "Agent") {
-              // Interface spécifique à l'agent de la mairie
-              AgentScreen();
-              // ... Ajoutez ici les widgets spécifiques à l'agent de la mairie
-            } else if (userType == "Admin") {
-              // Interface spécifique à l'administration
-              return AdminScreen();
-              // ... Ajoutez ici les widgets spécifiques à l'administration
-            }
-          }
-          if (snapshot.hasError) {
-            return Center(
-              child: Text("Something is wrong !!"),
-            );
-          }
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: CircularProgressIndicator.adaptive(),
-            );
-          } else {
-            return Center(
-              child: Text("Something goes really wrong!!"),
-            );
-          }
-        }
-        //This trailing comma makes auto-formatting nicer for build methods.
-        );
+                  if (userType == "Contribuable") {
+                    // Interface spécifique au contribuable
+                    return ContribuableScreen();
+                    // ... Ajoutez ici les widgets spécifiques au contribuable
+                  } else if (userType == "Agent") {
+                    // Interface spécifique à l'agent de la mairie
+                    return AgentScreen();
+                    // ... Ajoutez ici les widgets spécifiques à l'agent de la mairie
+                  } else if (userType == "Admin") {
+                    // Interface spécifique à l'administration
+                    return AdminScreen();
+                    // ... Ajoutez ici les widgets spécifiques à l'administration
+                  }
+                }
+                if (snapshot.hasError) {
+                  return Center(
+                    child: CircularProgressIndicator.adaptive(),
+                  );
+                } else {
+                  return Center(
+                    child: CircularProgressIndicator.adaptive(),
+                  );
+                }
+              }
+              //This trailing comma makes auto-formatting nicer for build methods.
+              ),
+        ),
+      ],
+    );
   }
 }
 
 enum UserType {
   Contribuable,
-  AgentMairie,
-  Administration,
+  Agent,
+  Admin,
 }
 
 // class HomePage extends StatelessWidget {

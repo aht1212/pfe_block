@@ -2,7 +2,7 @@
 import 'package:web3dart/web3dart.dart';
 
 class Commerce {
-  int id;
+  int? id;
   String nom;
   String adresse;
   EthereumAddress contribuableAddress;
@@ -11,7 +11,7 @@ class Commerce {
   EthereumAddress agentAddress;
 
   Commerce({
-    required this.id,
+     this.id,
     required this.nom,
     required this.adresse,
     required this.contribuableAddress,

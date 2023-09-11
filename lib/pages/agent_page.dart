@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../auth_api.dart';
 
 class AgentScreen extends StatefulWidget {
   const AgentScreen({super.key});
@@ -15,7 +14,7 @@ class _AgentScreenState extends State<AgentScreen> {
     return Scaffold(
       appBar: AppBar(
         leading:
-            IconButton(onPressed: () => signOut(), icon: Icon(Icons.logout)),
+            IconButton(onPressed: () {}, icon: Icon(Icons.logout)),
       ),body: Center(child: Text('Interface Agent Mairie'),),);
   }
 }

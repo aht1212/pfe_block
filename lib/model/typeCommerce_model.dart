@@ -1,13 +1,13 @@
 // Modèle pour stocker les informations des types de commerce
 
 class TypeCommerce {
-  int id;
+  int? id;
   String nom;
   int tarifAnnuel;
   String description;
 
   TypeCommerce({
-    required this.id,
+     this.id,
     required this.nom,
     required this.tarifAnnuel,
     required this.description,
