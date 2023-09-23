@@ -1,26 +1,37 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pfe_block/services/metamask.dart';
-import 'package:pfe_block/services/tax_management_service.dart';
-
-import 'homePageTestMetamaskTest.dart';
+import 'package:pfe_block/homePageTestMetamaskTest.dart';
+import 'package:pfe_block/home_page.dart';
+import 'package:pfe_block/signIn.dart';
 
 void main() async {
-  runApp(const MyApp());
-  await PatenteManagement().setup();
+  WidgetsFlutterBinding.ensureInitialized();
+  defaultTargetPlatform == TargetPlatform.android
+      ? await Firebase.initializeApp()
+      : await Firebase.initializeApp(
+          options: FirebaseOptions(
+          apiKey: "AIzaSyDvgGeMZ2o4kw12jbEA7Tbi1O0U31lsbxQ",
+          appId: "1:599530081826:web:e98aef2c40321d2e92047b",
+          messagingSenderId: "599530081826",
+          projectId: "pfee-33331",
+        ));
+
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
-    // final provider = MetaMaskProvider()..init();
-
     return MaterialApp(
-      title: 'Flutter Demo',
-      // This theme was made for FlexColorScheme version 6.1.1. Make sure
+      debugShowCheckedModeBanner: false,
+      title: 'Firebase Auth Demo',
+      home: LoginPage(),
+
+      //  This theme was made for FlexColorScheme version 6.1.1. Make sure
 // you use same or higher version, but still same major version. If
 // you use a lower version, some properties may not be supported. In
 // that case you can also remove them after copying the theme to your app.
@@ -102,118 +113,71 @@ class MyApp extends StatelessWidget {
 // themeMode: ThemeMode.system,
 
       themeMode: ThemeMode.system,
-      home: 
-          MyHomePage(),
     );
   }
 }
 
-// class MyHomePage extends StatefulWidget {
-//   const MyHomePage({Key? key, required this.provider}) : super(key: key);
+class LoginPage extends StatefulWidget {
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
 
-//   final MetaMaskProvider provider;
+class _LoginPageState extends State<LoginPage> {
+  // final FirebaseAuth _auth = FirebaseAuth.instance;
+  @override
+  void initState() {
+    super.initState();
+    // checkLoggedInUser();
+  }
 
-//   @override
-//   State<MyHomePage> createState() => _MyHomePageState();
-// }
+  Future<void> checkLoggedInUser() async {
+    // Vérifier si l'utilisateur est déjà connecté
+    if (FirebaseAuth.instance.currentUser != null) {
+      final adresseEth = await getUserEthAddress();
+      Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (BuildContext context) {
+        return MyHomeRealPage(addressConnected: adresseEth!);
+      }));
+    }
+  }
 
-// class _MyHomePageState extends State<MyHomePage> {
-//   late final MetaMaskProvider _provider;
+  Future<String?> getUserEthAddress() async {
+     User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      final usersRef = FirebaseFirestore.instance.collection('users');
+      final querySnapshot =
+          await usersRef.where("email", isEqualTo: currentUser.email).get();
+      if (querySnapshot.docs.isNotEmpty) {
+        return querySnapshot.docs.first['adresseEth'];
+      }
+    }
+    return null;
+  }
 
-//   @override
-//   void initState() {
-//     super.initState();
-//     _provider = widget.provider;
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: const Color(0xFF181818),
-//       body: Stack(
-//         children: [
-//           Center(
-//             child: Column(
-//               mainAxisSize: MainAxisSize.min,
-//               children: [
-//                 if (_provider.isConnected && _provider.isInOperatingChain)
-//                   const Text('Connected')
-//                 else if (_provider.isConnected && !_provider.isInOperatingChain)
-//                   Text(
-//                       'Wrong chain. Please connect to ${MetaMaskProvider.operatingChain}')
-//                 else if (_provider.isEnabled)
-//                   Column(
-//                     mainAxisSize: MainAxisSize.min,
-//                     children: [
-//                       const Text('Click the button...'),
-//                       const SizedBox(height: 8),
-//                       MaterialButton(
-//                         onPressed: () => _provider.connect(),
-//                         color: Colors.white,
-//                         padding: const EdgeInsets.all(0),
-//                         child: Row(
-//                           mainAxisSize: MainAxisSize.min,
-//                           children: [
-//                             Image.network(
-//                               'https://i0.wp.com/kindalame.com/wp-content/uploads/2021/05/metamask-fox-wordmark-horizontal.png?fit=1549%2C480&ssl=1',
-//                               width: 300,
-//                             ),
-//                           ],
-//                         ),
-//                       ),
-//                     ],
-//                   )
-//                 else
-//                   const Text('Please use a Web3 supported browser.'),
-//               ],
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-// class MetaMaskProvider {
-//   static const operatingChain = 1;
-
-//   String currentAddress = '';
-
-//   int currentChain = -1;
-
-//   bool _isEnabled = false;
-
-//   bool get isEnabled => _isEnabled;
-
-//   bool get isInOperatingChain => currentChain == operatingChain;
-
-//   bool get isConnected => isEnabled && currentAddress.isNotEmpty;
-
-//   Future<void> connect() async {
-//     if (_isEnabled) {
-//       final accs = await ethereum!.requestAccount();
-//       if (accs.isNotEmpty) currentAddress = accs.first;
-
-//       currentChain = await ethereum!.getChainId();
-//     }
-//   }
-
-//   clear() {
-//     currentAddress = '';
-//     currentChain = -1;
-//   }
-
-//   init() {
-//     // ethereum!..then((isAvailable) {
-//     //   _isEnabled = isAvailable;
-//     // });
-
-//     _isEnabled = ethereum!.isConnected();
-//     ethereum!.onAccountsChanged((accounts) {
-//       clear();
-//     });
-//     ethereum!.onChainChanged((accounts) {
-//       clear();
-//     });
-//   }
-// }
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        } else if (snapshot.hasData) {
+          return FutureBuilder<String?>(
+            future: getUserEthAddress(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator();
+              } else if (snapshot.hasData) {
+                return MyHomeRealPage(addressConnected: snapshot.data!);
+              } else {
+                return SignInPage2();
+              }
+            },
+          );
+        } else {
+          return SignInPage2();
+        }
+      },
+    );
+  }
+}

@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:pfe_block/home_page.dart';
 
 class SignInPage2 extends StatefulWidget {
   const SignInPage2({Key? key}) : super(key: key);
@@ -12,6 +14,13 @@ class SignInPage2 extends StatefulWidget {
 class _SignInPage2State extends State<SignInPage2> {
   int pageIndex = 0;
 
+  @override
+  void initState() {
+    super.initState();
+    // checkLoggedInUser();
+  }
+
+  
   @override
   Widget build(BuildContext context) {
     final bool isSmallScreen = MediaQuery.of(context).size.width < 600;
@@ -25,34 +34,6 @@ class _SignInPage2State extends State<SignInPage2> {
                       _FormContent(
                         pageIndex: pageIndex,
                       ),
-                      TextButton(
-                          onPressed: () {
-                            setState(() {
-                              pageIndex = 1;
-                            });
-                            showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return Scaffold(
-                                    body: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Center(
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Expanded(
-                                                child: _FormContent(
-                                              pageIndex: pageIndex,
-                                            )),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                                useRootNavigator: true);
-                          },
-                          child: Text("Inscription"))
                     ],
                   )
                 : Container(
@@ -60,7 +41,10 @@ class _SignInPage2State extends State<SignInPage2> {
                     constraints: const BoxConstraints(maxWidth: 800),
                     child: Row(
                       children: [
-                        Expanded(child: _Logo()),
+                        Expanded(
+                            child: SvgPicture.asset(
+                          "assets/svg/undraw_secure_login_pdn4.svg",
+                        )),
                         Expanded(
                           child: Center(
                               child: _FormContent(
@@ -117,6 +101,12 @@ class __FormContentState extends State<_FormContent> {
 
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  TextEditingController addressEthController = TextEditingController();
+  TextEditingController nomController = TextEditingController();
+  TextEditingController prenomController = TextEditingController();
+  TextEditingController adresseController = TextEditingController();
+  TextEditingController telephoneController = TextEditingController();
+
   Future<String?> signIn() async {
     try {
       showDialog(
@@ -130,8 +120,19 @@ class __FormContentState extends State<_FormContent> {
         email: emailController.text,
         password: passwordController.text,
       );
+      CollectionReference usersRef =
+          FirebaseFirestore.instance.collection('users');
 
-      Navigator.pop(context);
+      QuerySnapshot querySnapshot =
+          await usersRef.where("email", isEqualTo: emailController.text).get();
+
+      final adresseEth = querySnapshot.docs.first['adresseEth'];
+
+      Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (BuildContext context) {
+        return MyHomeRealPage(addressConnected: adresseEth);
+      }));
+
       return "SUCCESFUL LOGGED IN YOUPI !!!!!!!!!!!!!!!!!!!";
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found' || e.code == 'wrong-password') {
@@ -143,54 +144,6 @@ class __FormContentState extends State<_FormContent> {
           builder: (context) {
             return AlertDialog(
               title: Text("Email ou mot de passe incorrect"),
-              actions: [
-                ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text("Annuler"))
-              ],
-            );
-          });
-      return e.message;
-    } catch (e) {
-      return e.toString();
-    }
-  }
-
-  Future addUsersDetails(String email, String type) async {
-    await FirebaseFirestore.instance
-        .collection('users')
-        .add({"email": email, "type": type});
-  }
-
-  Future<String?> signUp() async {
-    try {
-      showDialog(
-          context: context,
-          builder: (context) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          });
-      // await addUsersDetails(emailController.text, "Contribuable");
-      await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(
-        email: emailController.text,
-        password: passwordController.text,
-      )
-          .then((value) {
-        Navigator.pop(context);
-      }).then((value) async {
-        await addUsersDetails(emailController.text, "Contribuable");
-      });
-
-      return "SUCCESFUL LOGGED IN YOUPI !!!!!!!!!!!!!!!!!!!";
-    } on FirebaseAuthException catch (e) {
-      Navigator.pop(context);
-      showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Text(e.message!),
               actions: [
                 ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(),
@@ -269,6 +222,7 @@ class __FormContentState extends State<_FormContent> {
                   )),
             ),
             _gap(),
+            _gap(),
             CheckboxListTile(
               value: _rememberMe,
               onChanged: (value) {
@@ -293,7 +247,7 @@ class __FormContentState extends State<_FormContent> {
                 child: Padding(
                   padding: EdgeInsets.all(10.0),
                   child: Text(
-                    widget.pageIndex == 0 ? "Sign in" : "Sign Up",
+                    "Connexion",
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -301,11 +255,8 @@ class __FormContentState extends State<_FormContent> {
                   if (_formKey.currentState?.validate() ?? false) {
                     /// do something
                     ///
-                    if (widget.pageIndex == 0) {
-                      await signIn();
-                    } else {
-                      await signUp();
-                    }
+
+                    await signIn();
                   }
                 },
               ),

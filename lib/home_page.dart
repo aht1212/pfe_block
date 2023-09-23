@@ -62,9 +62,14 @@ class _MyHomeRealPageState extends State<MyHomeRealPage> {
                     // Interface spécifique à l'administration
                     return AdminScreen();
                     // ... Ajoutez ici les widgets spécifiques à l'administration
+                  } else {
+                    return Scaffold(
+                      body: Center(child: Text("error")),
+                    );
                   }
                 }
                 if (snapshot.hasError) {
+                  
                   return Center(
                     child: CircularProgressIndicator.adaptive(),
                   );

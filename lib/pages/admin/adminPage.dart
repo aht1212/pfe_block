@@ -21,7 +21,7 @@ class _AdminPageState extends State<AdminPage> {
 
   List<MenuModel> menu = [
     MenuModel(icon: 'assets/svg/home.svg', title: "Dashboard"),
-    MenuModel(icon: 'assets/svg/profile.svg', title: "User"),
+    MenuModel(icon: 'assets/svg/profile.svg', title: "Agent"),
     MenuModel(icon: 'assets/svg/exercise.svg', title: "Taxe Configuration"),
     MenuModel(icon: 'assets/svg/setting.svg', title: "Recensement"),
     MenuModel(icon: 'assets/svg/history.svg', title: "Recouvrement"),

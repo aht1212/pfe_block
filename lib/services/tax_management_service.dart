@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:pfe_block/constants/private_key.dart';
@@ -12,8 +13,12 @@ import '../model/agent_model.dart';
 import '../model/typeCommerce_model.dart';
 
 class PatenteManagement {
-  final String rpcUrl = "http://127.0.0.1:7545";
-  final String wsUrl = "ws://127.0.0.1:7545";
+  final String rpcUrl = defaultTargetPlatform == TargetPlatform.android
+      ? "http://192.168.100.3:7545"
+      : "http://127.0.0.1:7545";
+  final String wsUrl = defaultTargetPlatform == TargetPlatform.android
+      ? "http://192.168.100.3:7545"
+      : "http://127.0.0.1:7545";
   final String privateKey =
       "0x6621c6728e92af21956c39b1d92e7ef56fb046df108fd6fc9a0c3eb491e8ac2c";
 
@@ -69,7 +74,7 @@ class PatenteManagement {
 
   Future<List<Agent>> getAgentAjouteEvents() async {
     isLoading = true;
-
+    await setup();
     final agentAjouteEvent = _contract!.events[0];
     final filter = FilterOptions.events(
       contract: _contract!,

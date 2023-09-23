@@ -1,5 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
 
 class AgentScreen extends StatefulWidget {
   const AgentScreen({super.key});
@@ -13,8 +13,15 @@ class _AgentScreenState extends State<AgentScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading:
-            IconButton(onPressed: () {}, icon: Icon(Icons.logout)),
-      ),body: Center(child: Text('Interface Agent Mairie'),),);
+        leading: IconButton(
+            onPressed: () {
+              FirebaseAuth.instance.signOut();
+            },
+            icon: Icon(Icons.logout)),
+      ),
+      body: Center(
+        child: Text('Interface Agent Mairie'),
+      ),
+    );
   }
 }

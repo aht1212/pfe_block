@@ -1,36 +1,26 @@
 {
   "project_info": {
-    "project_number": "389602654175",
-    "project_id": "pfe-block",
-    "storage_bucket": "pfe-block.appspot.com"
+    "project_number": "599530081826",
+    "project_id": "pfee-33331",
+    "storage_bucket": "pfee-33331.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:389602654175:android:6f3bd7a42c53dc322d366a",
+        "mobilesdk_app_id": "1:599530081826:android:bbdac2ec68bcd76892047b",
         "android_client_info": {
           "package_name": "com.example.pfe_block"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "389602654175-a3dbpl4mldbg57jr2b9u7nsa5dd8ug2r.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBUAfq4STDDR16nIXUD5SrPZ1EhtPcSQuc"
+          "current_key": "AIzaSyC7MlsWmBxjSX7flZYCYbbRlpJiRaJe6O0"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "389602654175-a3dbpl4mldbg57jr2b9u7nsa5dd8ug2r.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }
