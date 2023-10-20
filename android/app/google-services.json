@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "599530081826",
-    "project_id": "pfee-33331",
-    "storage_bucket": "pfee-33331.appspot.com"
+    "project_number": "45735240169",
+    "project_id": "pfe-test-1661a",
+    "storage_bucket": "pfe-test-1661a.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:599530081826:android:bbdac2ec68bcd76892047b",
+        "mobilesdk_app_id": "1:45735240169:android:808e2fd22324147b20ab78",
         "android_client_info": {
           "package_name": "com.example.pfe_block"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyC7MlsWmBxjSX7flZYCYbbRlpJiRaJe6O0"
+          "current_key": "AIzaSyBIKjv1FZkANZHUpt_lDrnOiXU7s5LtHh4"
         }
       ],
       "services": {

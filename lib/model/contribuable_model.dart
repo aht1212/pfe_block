@@ -9,27 +9,28 @@ class Contribuable {
   String adresse;
   String email;
   int telephone;
+  bool? estEnregistrer;
 
-  Contribuable({
-     this.id,
-    required this.ethAddress,
-    required this.nom,
-    required this.prenom,
-    required this.adresse,
-    required this.email,
-    required this.telephone,
-  });
+  Contribuable(
+      {this.id,
+      required this.ethAddress,
+      required this.nom,
+      required this.prenom,
+      required this.adresse,
+      required this.email,
+      required this.telephone,
+      this.estEnregistrer});
 
   factory Contribuable.fromEvent(List<dynamic> json) {
     return Contribuable(
-      id: json[0].toInt(),
-      ethAddress: json[1],
-      nom: json[2],
-      prenom: json[3],
-      adresse: json[4],
-      email: json[5],
-      telephone: json[6].toInt(),
-    );
+        id: json[0].toInt(),
+        ethAddress: json[1],
+        nom: json[2],
+        prenom: json[3],
+        adresse: json[4],
+        email: json[5],
+        telephone: json[6].toInt(),
+        estEnregistrer: json[7]);
   }
 
   Map<String, dynamic> toJson() => {

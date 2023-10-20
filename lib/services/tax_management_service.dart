@@ -75,23 +75,25 @@ class PatenteManagement {
   Future<List<Agent>> getAgentAjouteEvents() async {
     isLoading = true;
     await setup();
-    final agentAjouteEvent = _contract!.events[0];
-    final filter = FilterOptions.events(
-      contract: _contract!,
-      event: agentAjouteEvent,
-      fromBlock: BlockNum.genesis(),
-      toBlock: BlockNum.current(),
-    );
-    final logs = await _web3client!.getLogs(filter);
-// Traiter les logs récupérés
-    List<Agent> agents = [];
-    for (var log in logs) {
-      final decoded = agentAjouteEvent.decodeResults(log.topics!, log.data!);
-      Agent agent = Agent.fromEvent(decoded);
-      agents.add(agent);
+    final agentFunction = _contract!.function("getAgents");
+    BigInt cId = await _web3client!.getChainId();
 
-      print(agent.toJson());
+    List<Agent> agents = [];
+    Credentials credential = EthPrivateKey.fromHex(privateKey);
+    List contractCall = await _web3client!.call(
+        contract: _contract!,
+        function: agentFunction,
+        params: [],
+        atBlock: BlockNum.current());
+    List<dynamic> agentsCall = contractCall[0];
+    for (var element in agentsCall) {
+      Agent a = Agent.fromEvent(element);
+
+      if (a.estEnregistrer!) {
+        agents.add(a);
+      }
     }
+    // agents = contractCall.map((e) => null)
     return agents;
   }
 
@@ -179,7 +181,7 @@ class PatenteManagement {
       }
     });
     Credentials credential = EthPrivateKey.fromHex(privateKey);
-    _web3client!
+    await _web3client!
         .sendTransaction(
             credential,
             Transaction.callContract(
@@ -197,11 +199,80 @@ class PatenteManagement {
             chainId: cId.toInt())
         .then((value) {
       print(value.toString());
+
+      isLoading = false;
       return null;
     });
-    // } catch (e) {
-    //   print(e);
-    // }
+    await setup();
+  }
+
+  //modifier agent
+  Future<void> modifierAgent(
+      Agent agent, EthereumAddress addressExpediteur) async {
+    isLoading = true;
+
+    var result = _contract!.function("modifierAgent");
+    BigInt cId = await _web3client!.getChainId();
+    String privateKey = "";
+    ethereumAccounts.forEach((key, value) {
+      if (key == addressExpediteur.hexEip55) {
+        privateKey = value;
+      }
+    });
+    Credentials credential = EthPrivateKey.fromHex(privateKey);
+    await _web3client!
+        .sendTransaction(
+            credential,
+            Transaction.callContract(
+                contract: _contract!,
+                function: result,
+                parameters: [
+                  agent.ethAddress,
+                  agent.nom,
+                  agent.prenom,
+                  agent.adresse,
+                  agent.email,
+                  BigInt.from(agent.telephone)
+                ],
+                from: addressExpediteur),
+            chainId: cId.toInt())
+        .then((value) {
+      print(value.toString());
+
+      isLoading = false;
+      return null;
+    });
+    await setup();
+  }
+
+  // Supprimer un contribuable
+  Future<void> supprimerAgent(
+      EthereumAddress agent, EthereumAddress addressExpediteur) async {
+    isLoading = true;
+
+    var result = _contract!.function("supprimerAgent");
+    BigInt cId = await _web3client!.getChainId();
+    String privateKey = "";
+    ethereumAccounts.forEach((key, value) {
+      if (key == addressExpediteur.hexEip55) {
+        privateKey = value;
+      }
+    });
+    Credentials credential = EthPrivateKey.fromHex(privateKey);
+    _web3client!
+        .sendTransaction(
+            credential,
+            Transaction.callContract(
+                contract: _contract!,
+                function: result,
+                parameters: [agent],
+                from: addressExpediteur),
+            chainId: cId.toInt())
+        .then((value) {
+      return null;
+    });
+    await setup();
+    isLoading = false;
   }
 
   // Ajouter un contribuable
@@ -358,6 +429,49 @@ class PatenteManagement {
                   typeCommerce.nom,
                   BigInt.from(typeCommerce.tarifAnnuel),
                   typeCommerce.description
+                ],
+                from: addressExpediteur),
+            chainId: cId.toInt())
+        .then((value) {
+      print(value.toString());
+      return null;
+    });
+  }
+
+// Mettre à jour un commerce
+  Future<void> mettreAJourCommerce(
+      Commerce commerce, EthereumAddress addressExpediteur) async {
+    isLoading = true;
+
+    var result = _contract!.function("mettreAJourCommerce");
+    BigInt cId = await _web3client!.getChainId();
+    String privateKey = "";
+    ethereumAccounts.forEach((key, value) {
+      if (key == addressExpediteur.hexEip55) {
+        privateKey = value;
+      }
+    });
+    Credentials credential = EthPrivateKey.fromHex(privateKey);
+    _web3client!
+        .sendTransaction(
+            credential,
+            Transaction.callContract(
+                contract: _contract!,
+                function: result,
+                parameters: [
+                  BigInt.from(commerce.id!),
+
+                  commerce.nom,
+
+                  commerce.adresse,
+
+                  commerce.contribuableAddress,
+
+                  BigInt.from(commerce.chiffreAffairesAnnuel),
+
+                  BigInt.from(commerce.typeCommerce),
+
+                  // addressExpediteur,
                 ],
                 from: addressExpediteur),
             chainId: cId.toInt())

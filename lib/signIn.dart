@@ -191,7 +191,7 @@ class __FormContentState extends State<_FormContent> {
                 border: OutlineInputBorder(),
               ),
             ),
-            _gap(),
+            gap(),
             TextFormField(
               controller: passwordController,
               validator: (value) {
@@ -221,8 +221,8 @@ class __FormContentState extends State<_FormContent> {
                     },
                   )),
             ),
-            _gap(),
-            _gap(),
+            gap(),
+            gap(),
             CheckboxListTile(
               value: _rememberMe,
               onChanged: (value) {
@@ -236,7 +236,7 @@ class __FormContentState extends State<_FormContent> {
               dense: true,
               contentPadding: const EdgeInsets.all(0),
             ),
-            _gap(),
+            gap(),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -267,5 +267,5 @@ class __FormContentState extends State<_FormContent> {
     );
   }
 
-  Widget _gap() => const SizedBox(height: 16);
 }
+  Widget gap() => const SizedBox(height: 16);

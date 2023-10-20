@@ -14,10 +14,10 @@ void main() async {
       ? await Firebase.initializeApp()
       : await Firebase.initializeApp(
           options: FirebaseOptions(
-          apiKey: "AIzaSyDvgGeMZ2o4kw12jbEA7Tbi1O0U31lsbxQ",
-          appId: "1:599530081826:web:e98aef2c40321d2e92047b",
-          messagingSenderId: "599530081826",
-          projectId: "pfee-33331",
+          apiKey: "AIzaSyDgBCJC0Us5cogmz8k-2yzRlyq8UAvp-hI",
+          appId: "1:45735240169:web:7382fb3065b0db0420ab78",
+          messagingSenderId: "45735240169",
+          projectId: "pfe-test-1661a",
         ));
 
   runApp(MyApp());
@@ -142,7 +142,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<String?> getUserEthAddress() async {
-     User? currentUser = FirebaseAuth.instance.currentUser;
+    User? currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null) {
       final usersRef = FirebaseFirestore.instance.collection('users');
       final querySnapshot =
