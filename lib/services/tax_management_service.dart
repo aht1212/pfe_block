@@ -277,39 +277,57 @@ class PatenteManagement {
 
   // Ajouter un contribuable
   Future<void> ajouterContribuable(
-      Contribuable contribuable, EthereumAddress addressExpediteur) async {
-    isLoading = true;
+  Contribuable contribuable, EthereumAddress addressExpediteur) async {
+  isLoading = true;
 
-    var result = _contract!.function("ajouterContribuable");
-    BigInt cId = await _web3client!.getChainId();
-    String privateKey = "";
-    ethereumAccounts.forEach((key, value) {
-      if (key == addressExpediteur.hexEip55) {
-        privateKey = value;
-      }
-    });
-    Credentials credential = EthPrivateKey.fromHex(privateKey);
-    _web3client!
-        .sendTransaction(
-            credential,
-            Transaction.callContract(
-                contract: _contract!,
-                function: result,
-                parameters: [
-                  contribuable.ethAddress,
-                  contribuable.nom,
-                  contribuable.prenom,
-                  contribuable.adresse,
-                  contribuable.email,
-                  BigInt.from(contribuable.telephone)
-                ],
-                from: addressExpediteur),
-            chainId: cId.toInt())
-        .then((value) {
-      print(value.toString());
-      return null;
-    });
-  }
+  // Récupérez l'objet ContractFunction pour la fonction "ajouterContribuable"
+  var result = _contract!.function("ajouterContribuable");
+
+  // Récupérez la chaîne d'identifiant de chaîne Ethereum
+  BigInt cId = await _web3client!.getChainId();
+
+  String privateKey = "";
+  ethereumAccounts.forEach((key, value) {
+    if (key == addressExpediteur.hexEip55) {
+      privateKey = value;
+    }
+  });
+
+  // Créez un objet Credentials à partir de la clé privée
+  Credentials credential = EthPrivateKey.fromHex(privateKey);
+
+  // Préparez les paramètres pour la fonction "ajouterContribuable"
+  List<dynamic> params = [
+    contribuable.ethAddress,
+    contribuable.nif,
+    contribuable.denomination,
+    BigInt.from(contribuable.activitePrincipaleId),
+    contribuable.nom,
+    contribuable.prenom,
+    contribuable.adresse,
+    contribuable.email,
+    BigInt.from(contribuable.contact),
+    contribuable.valeurLocative,
+    contribuable.typeContribuable,
+    contribuable.dateCreation
+  ];
+
+  // Envoyez la transaction pour appeler la fonction
+  _web3client!
+      .sendTransaction(
+          credential,
+          Transaction.callContract(
+              contract: _contract!,
+              function: result,
+              parameters: params,
+              from: addressExpediteur),
+          chainId: cId.toInt())
+      .then((value) {
+    print(value.toString());
+    isLoading = false;
+  });
+}
+
 
 // Supprimer un contribuable
   Future<void> supprimerContribuable(

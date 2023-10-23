@@ -21,9 +21,11 @@ contract TaxManagement {
     // mapping(uint => Commerce) public commerces;
     mapping(uint => ActivitePrincipale) public activitePrincipale;
     mapping(uint => Patente) public patentes;
+    string[] public classes = ["Exceptionnelle", '1' , '2', '3', '4', '5', '6','7','8','9']; 
+
     Agent[] public allAgents;
    
-    uint public contribuableCount = 10000;
+    uint public contribuableCount = 0;
     uint public commerceCount = 0;
     uint public activitePrincipaleCount = 0;
     uint public agentCount = 0; 
@@ -146,7 +148,7 @@ contract TaxManagement {
         Contribuable memory nouveauContribuable = Contribuable({
             id: contribuableCount,
             ethAddress: _ethAddress,
-            nif : _nif, 
+            nif : _nif,
             denomination: _denomination, 
             activitePrincipaleId: _activitePrincipaleId, 
             nom: _nom,
@@ -184,7 +186,7 @@ contract TaxManagement {
 
     function creerPatente(uint contribuableId, uint anneePaiement) public seulementAgent() {
     require(!patentes[contribuableId].estPayee, "Une patente a deja ete payee pour cette annee.");
-    
+
     // Recuperer le contribuable correspondant
     Contribuable storage contribuable = contribuables[contribuableId];
     
@@ -259,7 +261,7 @@ function supprimerAgent(address _ethAddress) public seulementAdmin {
     }
 }
 function supprimerContribuable(address _ethAddress) public seulementAdmin {
-   for (uint index = 10000; index < contribuableCount; index++) {
+   for (uint index = 0; index < contribuableCount; index++) {
           if(_ethAddress == contribuables[index].ethAddress){
             contribuables[index].estEnregistre = false;
         }
@@ -288,7 +290,7 @@ function modifierAgent(address _ethAddress, string memory _nom, string memory _p
 }
 function modifierContribuable(address _ethAddress,string memory _denomination,uint _activitePrincipaleId, string memory _nom, string memory _prenom, string memory _adresse, string memory _email, uint _contact,string memory _typeContribuable,  uint _valeurLocative) public seulementAdmin {
     require(estContribuable[_ethAddress], "Ce contribuable n'est pas enregistre.");
-   for (uint index = 10000; index < contribuableCount; index++) {
+   for (uint index = 0; index < contribuableCount; index++) {
     if(_ethAddress == contribuables[index].ethAddress){
     Contribuable storage contribuable = contribuables[index];
     contribuable.nom = _nom;
@@ -328,7 +330,7 @@ function getAgents() public view returns (Agent[] memory) {
 
 function getContribuables() public view returns (Contribuable[] memory) {
     Contribuable[] memory contribuablesList = new Contribuable[](contribuableCount);
-    for (uint i = 10000; i <= contribuableCount; i++) {
+    for (uint i = 0; i <= contribuableCount; i++) {
         if(contribuables[i].estEnregistre){
         contribuablesList[i] = contribuables[i];}
     }
@@ -372,7 +374,7 @@ function getPatenteByContribuable(address _contribuableAdress) public view retur
 
   Patente[] memory patenteList = new Patente[](patentesCount);
   // Contribuable memory contribuableSelect = new Contribuable(contribuableCount);
-    for (uint i = 10000; i <= contribuableCount; i++) {
+    for (uint i = 0; i <= contribuableCount; i++) {
     if(_contribuableAdress == contribuables[i].ethAddress){
         Contribuable memory contribuableSelected = contribuables[i];
         for (uint j=0 ;j<patentesCount;j++){
