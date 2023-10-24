@@ -43,164 +43,203 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Nom du contribuable'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez saisir le nom du contribuable';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _name = value!;
-                },
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'NIF'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez saisir le NIF';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _nif = value!;
-                },
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Dénomination'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez saisir la dénomination du contribuable';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _denomination = value!;
-                },
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                decoration:
-                    InputDecoration(labelText: "ID de l'activité principal"),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Veuillez saisir l'ID de l'activité principale";
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _activitePrincipaleId = int.parse(value!);
-                },
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Prénom'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez saisir le prénom du contribuable';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _prenom = value!;
-                },
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Adresse'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Veuillez saisir l'adresse du contribuable";
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _adresse = value!;
-                },
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Email'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Veuillez saisir l'email du contribuable";
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _email = value!;
-                },
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Contact'),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez saisir le contact du contribuable';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _contact = int.parse(value!);
-                },
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Type de contribuable'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez saisir le type de contribuable';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _typeContribuable = value!;
-                },
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Valeur locative'),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez saisir la valeur locative du contribuable';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _valeurLocative = int.parse(value!);
-                },
-              ),
-              SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: () async {
-                  // await patenteManagement.getAllContribuables();
-                  await patenteManagement.getContribuableAjouteEvents();
+        padding: const EdgeInsets.all(16.0),
+        child: Row(children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SingleChildScrollView(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      TextFormField(
+                        decoration:
+                            InputDecoration(labelText: 'Nom du contribuable'),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Veuillez saisir le nom du contribuable';
+                          }
+                          return null;
+                        },
+                        onSaved: (value) {
+                          _name = value!;
+                        },
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        decoration: InputDecoration(labelText: 'Prénom'),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Veuillez saisir le prénom du contribuable';
+                          }
+                          return null;
+                        },
+                        onSaved: (value) {
+                          _prenom = value!;
+                        },
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        decoration: InputDecoration(labelText: 'NIF'),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Veuillez saisir le NIF';
+                          }
+                          return null;
+                        },
+                        onSaved: (value) {
+                          _nif = value!;
+                        },
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        decoration: InputDecoration(labelText: 'Dénomination'),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Veuillez saisir la dénomination du contribuable';
+                          }
+                          return null;
+                        },
+                        onSaved: (value) {
+                          _denomination = value!;
+                        },
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        decoration: InputDecoration(
+                            labelText: "ID de l'activité principal"),
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Veuillez saisir l'ID de l'activité principale";
+                          }
+                          return null;
+                        },
+                        onSaved: (value) {
+                          _activitePrincipaleId = int.parse(value!);
+                        },
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        decoration: InputDecoration(labelText: 'Adresse'),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Veuillez saisir l'adresse du contribuable";
+                          }
+                          return null;
+                        },
+                        onSaved: (value) {
+                          _adresse = value!;
+                        },
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        decoration: InputDecoration(labelText: 'Email'),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Veuillez saisir l'email du contribuable";
+                          }
+                          return null;
+                        },
+                        onSaved: (value) {
+                          _email = value!;
+                        },
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        decoration: InputDecoration(labelText: 'Contact'),
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Veuillez saisir le contact du contribuable';
+                          }
+                          return null;
+                        },
+                        onSaved: (value) {
+                          _contact = int.parse(value!);
+                        },
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        decoration:
+                            InputDecoration(labelText: 'Type de contribuable'),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Veuillez saisir le type de contribuable';
+                          }
+                          return null;
+                        },
+                        onSaved: (value) {
+                          _typeContribuable = value!;
+                        },
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        decoration:
+                            InputDecoration(labelText: 'Valeur locative'),
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Veuillez saisir la valeur locative du contribuable';
+                          }
+                          return null;
+                        },
+                        onSaved: (value) {
+                          _valeurLocative = int.parse(value!);
+                        },
+                      ),
+                      SizedBox(height: 32),
+                      ElevatedButton(
+                        onPressed: () async {
+                          // await patenteManagement.getAllContribuables();
+                          await patenteManagement.getContribuableAjouteEvents();
 
-                  if (_formKey.currentState!.validate()) {
-                    _formKey.currentState!.save();
-                    // Appel de la fonction pour enregistrer le contribuable en utilisant Web3dart
-                  }
-                },
-                child: Text('Enregistrer'),
+                          if (_formKey.currentState!.validate()) {
+                            _formKey.currentState!.save();
+                            // Appel de la fonction pour enregistrer le contribuable en utilisant Web3dart
+                          }
+                        },
+                        child: Text('Enregistrer'),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ],
+            ),
           ),
-        ),
-      ),
-    );
+          Expanded(
+              child: SingleChildScrollView(
+            child: Card(
+              // padding: EdgeInsets.all(8),
+              // decoration: BoxDecoration(
+              //   border: Border.all(width: 2, color: Colors.white70),
+              //   borderRadius: BorderRadius.circular(50),
+              // ),
+              child: DataTable(
+                  border: TableBorder.all(
+                      color: Colors.black54,
+                      width: 3,
+                      borderRadius: BorderRadius.circular(30)),
+                  columns: [
+                    DataColumn(label: Text("Nom")),
+                    DataColumn(label: Text("Prenoms")),
+                    DataColumn(label: Text("Date naissance")),
+                    DataColumn(label: Text("Adresse"))
+                  ],
+                  rows: List<DataRow>.generate(15, (index) {
+                    // Contribuable c = _contribuablesList[index];
+                    return DataRow(cells: [
+                      DataCell(Text("c.nom")),
+                      DataCell(Text("c.prenoms")),
+                      DataCell(Text("date")),
+                      DataCell(Text("c.adresse"))
+                    ]);
+                  })),
+            ),
+          ))
+        ]));
   }
 
   Future<void> enregistrerContribuable(

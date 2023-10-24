@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:pfe_block/constants/private_key.dart';
+import 'package:pfe_block/model/activite_model.dart';
 import 'package:pfe_block/model/commerce_model.dart';
 import 'package:pfe_block/model/contribuable_model.dart';
 import 'package:web3dart/web3dart.dart';
@@ -167,6 +168,30 @@ class PatenteManagement {
     return typeCommerces;
   }
 
+  Future<List<Activite>> getActivites() async {
+    isLoading = true;
+    await setup();
+    final activiteFunction = _contract!.function("getActivitesPrincipales");
+    BigInt cId = await _web3client!.getChainId();
+
+    List<Activite> activites = [];
+    Credentials credential = EthPrivateKey.fromHex(privateKey);
+    List contractCall = await _web3client!.call(
+      contract: _contract!,
+      function: activiteFunction,
+      params: [],
+      atBlock: BlockNum.current(),
+    );
+
+    for (var element in contractCall[0]) {
+      Activite activite = Activite.fromEvent(element);
+      activites.add(activite);
+    }
+
+    isLoading = false;
+    return activites;
+  }
+
 //ajouter agent
   Future<void> ajouterAgent(
       Agent agent, EthereumAddress addressExpediteur) async {
@@ -277,57 +302,56 @@ class PatenteManagement {
 
   // Ajouter un contribuable
   Future<void> ajouterContribuable(
-  Contribuable contribuable, EthereumAddress addressExpediteur) async {
-  isLoading = true;
+      Contribuable contribuable, EthereumAddress addressExpediteur) async {
+    isLoading = true;
 
-  // Récupérez l'objet ContractFunction pour la fonction "ajouterContribuable"
-  var result = _contract!.function("ajouterContribuable");
+    // Récupérez l'objet ContractFunction pour la fonction "ajouterContribuable"
+    var result = _contract!.function("ajouterContribuable");
 
-  // Récupérez la chaîne d'identifiant de chaîne Ethereum
-  BigInt cId = await _web3client!.getChainId();
+    // Récupérez la chaîne d'identifiant de chaîne Ethereum
+    BigInt cId = await _web3client!.getChainId();
 
-  String privateKey = "";
-  ethereumAccounts.forEach((key, value) {
-    if (key == addressExpediteur.hexEip55) {
-      privateKey = value;
-    }
-  });
+    String privateKey = "";
+    ethereumAccounts.forEach((key, value) {
+      if (key == addressExpediteur.hexEip55) {
+        privateKey = value;
+      }
+    });
 
-  // Créez un objet Credentials à partir de la clé privée
-  Credentials credential = EthPrivateKey.fromHex(privateKey);
+    // Créez un objet Credentials à partir de la clé privée
+    Credentials credential = EthPrivateKey.fromHex(privateKey);
 
-  // Préparez les paramètres pour la fonction "ajouterContribuable"
-  List<dynamic> params = [
-    contribuable.ethAddress,
-    contribuable.nif,
-    contribuable.denomination,
-    BigInt.from(contribuable.activitePrincipaleId),
-    contribuable.nom,
-    contribuable.prenom,
-    contribuable.adresse,
-    contribuable.email,
-    BigInt.from(contribuable.contact),
-    contribuable.valeurLocative,
-    contribuable.typeContribuable,
-    contribuable.dateCreation
-  ];
+    // Préparez les paramètres pour la fonction "ajouterContribuable"
+    List<dynamic> params = [
+      contribuable.ethAddress,
+      contribuable.nif,
+      contribuable.denomination,
+      BigInt.from(contribuable.activitePrincipaleId),
+      contribuable.nom,
+      contribuable.prenom,
+      contribuable.adresse,
+      contribuable.email,
+      BigInt.from(contribuable.contact),
+      contribuable.valeurLocative,
+      contribuable.typeContribuable,
+      contribuable.dateCreation
+    ];
 
-  // Envoyez la transaction pour appeler la fonction
-  _web3client!
-      .sendTransaction(
-          credential,
-          Transaction.callContract(
-              contract: _contract!,
-              function: result,
-              parameters: params,
-              from: addressExpediteur),
-          chainId: cId.toInt())
-      .then((value) {
-    print(value.toString());
-    isLoading = false;
-  });
-}
-
+    // Envoyez la transaction pour appeler la fonction
+    _web3client!
+        .sendTransaction(
+            credential,
+            Transaction.callContract(
+                contract: _contract!,
+                function: result,
+                parameters: params,
+                from: addressExpediteur),
+            chainId: cId.toInt())
+        .then((value) {
+      print(value.toString());
+      isLoading = false;
+    });
+  }
 
 // Supprimer un contribuable
   Future<void> supprimerContribuable(
@@ -540,5 +564,45 @@ class PatenteManagement {
         params: [adresse],
         atBlock: const BlockNum.current());
     return result[0].toString();
+  }
+
+  // ajouterActivite(Activite activite, EthereumAddress ethereumAddress) {
+  //   // TODO: implement ajouterActivite
+
+  // }
+
+  Future<void> ajouterActivite(
+      Activite activite, EthereumAddress addressExpediteur) async {
+    isLoading = true;
+
+    var result = _contract!.function("ajouterActivite");
+    BigInt cId = await _web3client!.getChainId();
+    String privateKey = "";
+    ethereumAccounts.forEach((key, value) {
+      if (key == addressExpediteur.hexEip55) {
+        privateKey = value;
+      }
+    });
+    Credentials credential = EthPrivateKey.fromHex(privateKey);
+    await _web3client!
+        .sendTransaction(
+            credential,
+            Transaction.callContract(
+                contract: _contract!,
+                function: result,
+                parameters: [
+                  activite.nom,
+                  BigInt.from(activite.droitFixeAnnuel),
+                  activite.description,
+                ],
+                from: addressExpediteur),
+            chainId: cId.toInt())
+        .then((value) {
+      print(value.toString());
+
+      isLoading = false;
+      return null;
+    });
+    await setup();
   }
 }
