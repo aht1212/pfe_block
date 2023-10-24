@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:web3dart/web3dart.dart';
 
 import '../../model/activite_model.dart';
@@ -78,6 +79,16 @@ class _TaxConfigurationFormState extends State<TaxConfigurationForm> {
   int _droitFixeAnnuel = 0;
   String _description = '';
 
+  // Fonction pour réinitialiser les champs du formulaire
+  void resetForm() {
+    _formKey.currentState?.reset();
+    setState(() {
+      _nom = '';
+      _droitFixeAnnuel = 0;
+      _description = '';
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -142,6 +153,8 @@ class _TaxConfigurationFormState extends State<TaxConfigurationForm> {
                     description: _description,
                   );
                   widget.onAjouterActivite(nouvelleActivite);
+
+                  resetForm();
                 }
               },
               child: Text('Enregistrer'),
@@ -163,48 +176,104 @@ class TaxConfigurationList extends StatefulWidget {
 }
 
 class _TaxConfigurationListState extends State<TaxConfigurationList> {
+  List<Activite> _filteredActivites = [];
+  bool _isSearching = false;
+  TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    widget.activitesFuture.then((activites) {
+      setState(() {
+        _filteredActivites = activites;
+      });
+    });
+
+    _searchController.addListener(() {
+      if (_searchController.text.isEmpty) {
+        _resetSearch();
+      } else {
+        _search(_searchController.text);
+      }
+    });
+  }
+
+  void _search(String query) {
+    setState(() {
+      _filteredActivites = _filteredActivites
+          .where((activite) =>
+              activite.nom.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    });
+  }
+
+  void _resetSearch() {
+    setState(() {
+      _filteredActivites = _filteredActivites;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: FutureBuilder<List<Activite>>(
-        future: widget.activitesFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
-          } else if (snapshot.hasError) {
-            return Text('Une erreur s\'est produite : ${snapshot.error}');
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Text('Aucune activité enregistrée.');
-          } else {
-            final activites = snapshot.data;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Liste des Activités Principales',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 16),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: activites!.length,
-                    itemBuilder: (context, index) {
-                      final activite = activites[index];
-                      return Card(
-                        child: ListTile(
-                          title: Text(activite.nom),
-                          subtitle: Text(
-                              'Droit Fixe Annuel: ${activite.droitFixeAnnuel}'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Liste des Activités Principales',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 16),
+          TextField(
+            controller: _searchController,
+            decoration: InputDecoration(
+              hintText: 'Rechercher...',
+              prefixIcon: Icon(Icons.search),
+              suffixIcon: _isSearching
+                  ? IconButton(
+                      icon: Icon(Icons.close),
+                      onPressed: () {
+                        _searchController.clear();
+                      },
+                    )
+                  : null,
+            ),
+          ),
+          SizedBox(height: 16),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _filteredActivites.length,
+              itemBuilder: (context, index) {
+                final activite = _filteredActivites[index];
+                return Card(
+                  child: ListTile(
+                    title: Text(activite.nom),
+                    subtitle:
+                        Text('Droit Fixe Annuel: ${activite.droitFixeAnnuel}'),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.edit),
+                          onPressed: () {
+                            // Ajoutez ici la logique de modification de l'activité
+                          },
                         ),
-                      );
-                    },
+                        IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () {
+                            // Ajoutez ici la logique de suppression de l'activité
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            );
-          }
-        },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

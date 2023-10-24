@@ -575,7 +575,7 @@ class PatenteManagement {
       Activite activite, EthereumAddress addressExpediteur) async {
     isLoading = true;
 
-    var result = _contract!.function("ajouterActivite");
+    var result = _contract!.function("ajouterActivitePrincipale");
     BigInt cId = await _web3client!.getChainId();
     String privateKey = "";
     ethereumAccounts.forEach((key, value) {
