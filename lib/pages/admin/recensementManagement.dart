@@ -28,6 +28,7 @@ class RegisterContribuableForm extends StatefulWidget {
 
 class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
   final _formKey = GlobalKey<FormState>();
+  String _ethAdress = "";
   String _name = '';
   String _nif = '';
   String _denomination = '';
@@ -38,7 +39,22 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
   int _contact = 0;
   String _typeContribuable = '';
   int _valeurLocative = 0;
-  PatenteManagement patenteManagement = PatenteManagement();
+  PatenteManagement _patenteManagement = PatenteManagement();
+
+  List<Contribuable> _contribuables = [];
+  // PatenteManagement _patenteManagement = PatenteManagement();
+  Future<List<Contribuable>> getContribuables() async {
+    _contribuables = await _patenteManagement.getContribuableAjouteEvents();
+    return _contribuables;
+  }
+
+  late Future<List<Contribuable>> _contribuablesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _contribuablesFuture = getContribuables();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,8 +71,8 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       TextFormField(
-                        decoration:
-                            InputDecoration(labelText: 'Nom du contribuable'),
+                        decoration: const InputDecoration(
+                            labelText: 'Nom du contribuable'),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Veuillez saisir le nom du contribuable';
@@ -67,9 +83,9 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
                           _name = value!;
                         },
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       TextFormField(
-                        decoration: InputDecoration(labelText: 'Prénom'),
+                        decoration: const InputDecoration(labelText: 'Prénom'),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Veuillez saisir le prénom du contribuable';
@@ -80,9 +96,9 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
                           _prenom = value!;
                         },
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       TextFormField(
-                        decoration: InputDecoration(labelText: 'NIF'),
+                        decoration: const InputDecoration(labelText: 'NIF'),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Veuillez saisir le NIF';
@@ -93,9 +109,10 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
                           _nif = value!;
                         },
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       TextFormField(
-                        decoration: InputDecoration(labelText: 'Dénomination'),
+                        decoration:
+                            const InputDecoration(labelText: 'Dénomination'),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Veuillez saisir la dénomination du contribuable';
@@ -106,9 +123,9 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
                           _denomination = value!;
                         },
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       TextFormField(
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                             labelText: "ID de l'activité principal"),
                         keyboardType: TextInputType.number,
                         validator: (value) {
@@ -121,9 +138,9 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
                           _activitePrincipaleId = int.parse(value!);
                         },
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       TextFormField(
-                        decoration: InputDecoration(labelText: 'Adresse'),
+                        decoration: const InputDecoration(labelText: 'Adresse'),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return "Veuillez saisir l'adresse du contribuable";
@@ -134,9 +151,9 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
                           _adresse = value!;
                         },
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       TextFormField(
-                        decoration: InputDecoration(labelText: 'Email'),
+                        decoration: const InputDecoration(labelText: 'Email'),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return "Veuillez saisir l'email du contribuable";
@@ -147,9 +164,9 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
                           _email = value!;
                         },
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       TextFormField(
-                        decoration: InputDecoration(labelText: 'Contact'),
+                        decoration: const InputDecoration(labelText: 'Contact'),
                         keyboardType: TextInputType.number,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -161,10 +178,10 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
                           _contact = int.parse(value!);
                         },
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       TextFormField(
-                        decoration:
-                            InputDecoration(labelText: 'Type de contribuable'),
+                        decoration: const InputDecoration(
+                            labelText: 'Type de contribuable'),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Veuillez saisir le type de contribuable';
@@ -175,10 +192,10 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
                           _typeContribuable = value!;
                         },
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       TextFormField(
                         decoration:
-                            InputDecoration(labelText: 'Valeur locative'),
+                            const InputDecoration(labelText: 'Valeur locative'),
                         keyboardType: TextInputType.number,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -190,18 +207,37 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
                           _valeurLocative = int.parse(value!);
                         },
                       ),
-                      SizedBox(height: 32),
+                      const SizedBox(height: 32),
                       ElevatedButton(
                         onPressed: () async {
                           // await patenteManagement.getAllContribuables();
-                          await patenteManagement.getContribuableAjouteEvents();
+                          // await patenteManagement.getContribuableAjouteEvents();
 
                           if (_formKey.currentState!.validate()) {
                             _formKey.currentState!.save();
                             // Appel de la fonction pour enregistrer le contribuable en utilisant Web3dart
+
+                            await _patenteManagement.ajouterContribuable(
+                                Contribuable(
+                                    ethAddress:
+                                        EthereumAddress.fromHex(_ethAdress),
+                                    nif: _nif,
+                                    denomination: _denomination,
+                                    activitePrincipaleId: _activitePrincipaleId,
+                                    nom: _name,
+                                    prenom: _prenom,
+                                    adresse: _adresse,
+                                    email: _email,
+                                    contact: _contact,
+                                    valeurLocative: _valeurLocative,
+                                    typeContribuable: _typeContribuable,
+                                    dateCreation:
+                                        DateTime.now().toLocal().toString()),
+                                EthereumAddress.fromHex(
+                                    "0xC232db3AE5eeaaf67a31cdbA2b448fA323FDABF7"));
                           }
                         },
-                        child: Text('Enregistrer'),
+                        child: const Text('Enregistrer'),
                       ),
                     ],
                   ),
@@ -209,36 +245,74 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
               ),
             ),
           ),
-          Expanded(
-              child: SingleChildScrollView(
-            child: Card(
-              // padding: EdgeInsets.all(8),
-              // decoration: BoxDecoration(
-              //   border: Border.all(width: 2, color: Colors.white70),
-              //   borderRadius: BorderRadius.circular(50),
-              // ),
-              child: DataTable(
-                  border: TableBorder.all(
-                      color: Colors.black54,
-                      width: 3,
-                      borderRadius: BorderRadius.circular(30)),
-                  columns: [
-                    DataColumn(label: Text("Nom")),
-                    DataColumn(label: Text("Prenoms")),
-                    DataColumn(label: Text("Date naissance")),
-                    DataColumn(label: Text("Adresse"))
-                  ],
-                  rows: List<DataRow>.generate(15, (index) {
-                    // Contribuable c = _contribuablesList[index];
-                    return DataRow(cells: [
-                      DataCell(Text("c.nom")),
-                      DataCell(Text("c.prenoms")),
-                      DataCell(Text("date")),
-                      DataCell(Text("c.adresse"))
-                    ]);
-                  })),
-            ),
-          ))
+          FutureBuilder(
+              future: _contribuablesFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(
+                      child: Text('Erreur de chargement des agents.'));
+                } else if (snapshot.hasData && snapshot.data!.isEmpty) {
+                  return Center(child: Text('Aucun agent enregistré.'));
+                } else {
+                  return Expanded(
+                    flex: 3,
+                    child: SingleChildScrollView(
+                      child: Card(
+                        child: DataTable(
+                          columns: [
+                            const DataColumn(label: Text('Nom')),
+                            const DataColumn(label: Text('Prénom')),
+                            const DataColumn(label: Text('NIF')),
+                            const DataColumn(label: Text('Adresse')),
+                            const DataColumn(
+                                label: Text('Type de contribuable')),
+                            const DataColumn(label: Text('Actions')),
+                          ],
+                          rows: _contribuables.map((contribuable) {
+                            return DataRow(cells: [
+                              DataCell(Text(contribuable.nom)),
+                              DataCell(Text(contribuable.prenom)),
+                              DataCell(Text(contribuable.nif)),
+                              DataCell(Text(contribuable.adresse)),
+                              DataCell(Text(contribuable.typeContribuable)),
+                              DataCell(Row(
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit),
+                                    onPressed: () {
+                                      // Ouvrir l'écran de modification du Contribuable
+                                      // Navigator.push(
+                                      //   context,
+                                      //   MaterialPageRoute(
+                                      //     builder: (context) => EditContribuableScreen(
+                                      //       contribuable: contribuable,
+                                      //     ),
+                                      //   ),
+                                      // );
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete),
+                                    onPressed: () {
+                                      // Supprimer le Contribuable
+                                      // deleteContribuable(contribuable);
+                                      // setState(() {
+                                      //   contribuables.remove(contribuable);
+                                      // });
+                                    },
+                                  ),
+                                ],
+                              )),
+                            ]);
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+              }),
         ]));
   }
 
@@ -258,7 +332,7 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
     // Connexion au nœud Ethereum en utilisant Web3dart
 
     // Appel de la fonction pour enregistrer le contribuable
-    patenteManagement.ajouterContribuable(
+    await _patenteManagement.ajouterContribuable(
         Contribuable(
           ethAddress: ethAddress,
           nom: name,

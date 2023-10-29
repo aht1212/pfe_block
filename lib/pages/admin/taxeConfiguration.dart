@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:web3dart/web3dart.dart';
 
 import '../../model/activite_model.dart';
@@ -29,9 +28,16 @@ class _TaxConfigurationScreenState extends State<TaxConfigurationScreen> {
   Future<void> _ajouterActivite(Activite activite) async {
     await _patenteManagement.ajouterActivite(activite,
         EthereumAddress.fromHex("0xC232db3AE5eeaaf67a31cdbA2b448fA323FDABF7"));
-    setState(() {
-      _activitesFuture = getActivites();
-    });
+    _activitesFuture = getActivites();
+    setState(() {});
+  }
+
+  Future<void> _deleteActivite(Activite activite) async {
+    await _patenteManagement.supprimerActivite(activite,
+        EthereumAddress.fromHex("0xC232db3AE5eeaaf67a31cdbA2b448fA323FDABF7"));
+
+    _activitesFuture = getActivites();
+    setState(() {});
   }
 
   @override
@@ -55,8 +61,8 @@ class _TaxConfigurationScreenState extends State<TaxConfigurationScreen> {
           Expanded(
             flex: 3,
             child: TaxConfigurationList(
-              activitesFuture: _activitesFuture,
-            ),
+                activitesFuture: _activitesFuture,
+                onDeleteActivite: _deleteActivite),
           ),
         ],
       ),
@@ -168,8 +174,12 @@ class _TaxConfigurationFormState extends State<TaxConfigurationForm> {
 
 class TaxConfigurationList extends StatefulWidget {
   final Future<List<Activite>> activitesFuture;
+  final Function(Activite) onDeleteActivite;
 
-  TaxConfigurationList({required this.activitesFuture});
+  TaxConfigurationList({
+    required this.activitesFuture,
+    required this.onDeleteActivite,
+  });
 
   @override
   _TaxConfigurationListState createState() => _TaxConfigurationListState();
@@ -230,11 +240,14 @@ class _TaxConfigurationListState extends State<TaxConfigurationList> {
             decoration: InputDecoration(
               hintText: 'Rechercher...',
               prefixIcon: Icon(Icons.search),
-              suffixIcon: _isSearching
+              suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
-                      icon: Icon(Icons.close),
+                      icon: Icon(Icons.clear),
                       onPressed: () {
-                        _searchController.clear();
+                        setState(() {
+                          _searchController.clear();
+                          _resetSearch();
+                        });
                       },
                     )
                   : null,
@@ -263,6 +276,39 @@ class _TaxConfigurationListState extends State<TaxConfigurationList> {
                         IconButton(
                           icon: Icon(Icons.delete),
                           onPressed: () {
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Center(child: Text("Supprimer")),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () async {
+                                            showDialog(
+                                                context: context,
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return AlertDialog(
+                                                      backgroundColor:
+                                                          Colors.transparent,
+                                                      content: SizedBox(
+                                                          // width: 30,
+                                                          height: 5,
+                                                          child:
+                                                              LinearProgressIndicator()));
+                                                });
+                                            widget.onDeleteActivite(activite);
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: Text("Oui")),
+                                      TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: Text("Non"))
+                                    ],
+                                  );
+                                }).then((value) => null);
                             // Ajoutez ici la logique de suppression de l'activité
                           },
                         ),
