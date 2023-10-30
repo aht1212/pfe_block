@@ -101,25 +101,25 @@ class PatenteManagement {
   Future<List<Contribuable>> getContribuableAjouteEvents() async {
     isLoading = true;
     await setup();
-    final contribuableAjouteEvent = _contract!.events[2];
-    final filter = FilterOptions.events(
-      contract: _contract!,
-      event: contribuableAjouteEvent,
-      fromBlock: BlockNum.genesis(),
-      toBlock: BlockNum.current(),
-    );
-    final logs = await _web3client!.getLogs(filter);
+    final contribuableFunction = _contract!.function("getContribuables");
+    BigInt cId = await _web3client!.getChainId();
 
     List<Contribuable> contribuables = [];
-    for (var log in logs) {
-      final decoded =
-          contribuableAjouteEvent.decodeResults(log.topics!, log.data!);
-      Contribuable contribuable = Contribuable.fromEvent(decoded);
-      contribuables.add(contribuable);
-      print(contribuable.toJson());
-    }
-    isLoading = false;
+    Credentials credential = EthPrivateKey.fromHex(privateKey);
+    List contractCall = await _web3client!.call(
+        contract: _contract!,
+        function: contribuableFunction,
+        params: [],
+        atBlock: BlockNum.current());
+    List<dynamic> contribuablesCall = contractCall[0];
+    for (var element in contribuablesCall) {
+      Contribuable a = Contribuable.fromEvent(element);
 
+      if (a.estEnregistre!) {
+        contribuables.add(a);
+      }
+    }
+    // contribuables = contractCall.map((e) => null)
     return contribuables;
   }
 
@@ -327,29 +327,29 @@ class PatenteManagement {
     Credentials credential = EthPrivateKey.fromHex(privateKey);
 
     // Préparez les paramètres pour la fonction "ajouterContribuable"
-    List<dynamic> params = [
-      contribuable.ethAddress,
-      contribuable.nif,
-      contribuable.denomination,
-      BigInt.from(contribuable.activitePrincipaleId),
-      contribuable.nom,
-      contribuable.prenom,
-      contribuable.adresse,
-      contribuable.email,
-      BigInt.from(contribuable.contact),
-      contribuable.valeurLocative,
-      contribuable.typeContribuable,
-      contribuable.dateCreation
-    ];
+    // List<dynamic> params = [];
 
     // Envoyez la transaction pour appeler la fonction
-    _web3client!
+    await _web3client!
         .sendTransaction(
             credential,
             Transaction.callContract(
                 contract: _contract!,
                 function: result,
-                parameters: params,
+                parameters: [
+                  contribuable.ethAddress,
+                  contribuable.nif,
+                  contribuable.denomination,
+                  BigInt.from(contribuable.activitePrincipaleId),
+                  contribuable.nom,
+                  contribuable.prenom,
+                  contribuable.adresse,
+                  contribuable.email,
+                  BigInt.from(contribuable.contact),
+                  contribuable.typeContribuable,
+                  contribuable.dateCreation,
+                  BigInt.from(contribuable.valeurLocative)
+                ],
                 from: addressExpediteur),
             chainId: cId.toInt())
         .then((value) {
