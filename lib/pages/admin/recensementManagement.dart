@@ -14,18 +14,61 @@ class RecensementManagementScreen extends StatefulWidget {
 
 class _RecensementManagementScreenState
     extends State<RecensementManagementScreen> {
+  final PatenteManagement _patenteManagement = PatenteManagement();
+
+  List<Contribuable> _contribuables = [];
+  Future<void> _ajouterContribuable(Contribuable contribuable) async {
+    await _patenteManagement.ajouterContribuable(contribuable,
+        EthereumAddress.fromHex("0xC232db3AE5eeaaf67a31cdbA2b448fA323FDABF7"));
+
+    setState(() {
+      _contribuableFuture = updateContribuables();
+    });
+  }
+
+  Future<List<Contribuable>> getContribuables() async {
+    _contribuables = await _patenteManagement.getContribuableAjouteEvents();
+    return _contribuables;
+  }
+
+  Future<List<Contribuable>> updateContribuables() async {
+    _contribuables = await _patenteManagement.getContribuableAjouteEvents();
+    return _contribuables;
+  }
+
+  late Future<List<Contribuable>> _contribuableFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _contribuableFuture = getContribuables();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(flex: 2, child: RegisterContribuableForm()),
-        Expanded(flex: 5, child: ContribuableList())
+        Expanded(
+            flex: 2,
+            child: RegisterContribuableForm(
+              onAjouterContribuable: _ajouterContribuable,
+            )),
+        Expanded(
+            flex: 5,
+            child: ContribuableList(
+              contribuableListFuture: _contribuableFuture,
+            ))
       ],
     );
   }
 }
 
 class RegisterContribuableForm extends StatefulWidget {
+  final Function(Contribuable) onAjouterContribuable;
+
+  const RegisterContribuableForm(
+      {super.key, required this.onAjouterContribuable});
+
   @override
   _RegisterContribuableFormState createState() =>
       _RegisterContribuableFormState();
@@ -243,30 +286,27 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
               ),
               ElevatedButton(
                 onPressed: () async {
-                  // await patenteManagement.getAllContribuables();
-                  // await patenteManagement.getContribuableAjouteEvents();
+                  showLoadingDialog();
 
                   if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
                     // Appel de la fonction pour enregistrer le contribuable en utilisant Web3dart
-
-                    await _patenteManagement.ajouterContribuable(
-                        Contribuable(
-                            ethAddress: EthereumAddress.fromHex(_ethAdress),
-                            nif: _nif,
-                            denomination: _denomination,
-                            activitePrincipaleId: _activitePrincipaleId,
-                            nom: _name,
-                            prenom: _prenom,
-                            adresse: _adresse,
-                            email: _email,
-                            contact: _contact,
-                            valeurLocative: _valeurLocative,
-                            typeContribuable: _typeContribuable,
-                            dateCreation: DateTime.now().toLocal().toString()),
-                        EthereumAddress.fromHex(
-                            "0xC232db3AE5eeaaf67a31cdbA2b448fA323FDABF7"));
+                    await widget.onAjouterContribuable(Contribuable(
+                        ethAddress: EthereumAddress.fromHex(_ethAdress),
+                        nif: _nif,
+                        denomination: _denomination,
+                        activitePrincipaleId: _activitePrincipaleId,
+                        nom: _name,
+                        prenom: _prenom,
+                        adresse: _adresse,
+                        email: _email,
+                        contact: _contact,
+                        valeurLocative: _valeurLocative,
+                        typeContribuable: _typeContribuable,
+                        dateCreation: DateTime.now().toLocal().toString()));
                   }
+
+                  Navigator.of(context).pop();
                 },
                 child: const Text('Enregistrer'),
               ),
@@ -313,7 +353,8 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
 }
 
 class ContribuableList extends StatefulWidget {
-  const ContribuableList({super.key});
+  final Future<List<Contribuable>> contribuableListFuture;
+  const ContribuableList({super.key, required this.contribuableListFuture});
 
   @override
   State<ContribuableList> createState() => _ContribuableListState();
@@ -322,17 +363,13 @@ class ContribuableList extends StatefulWidget {
 class _ContribuableListState extends State<ContribuableList> {
   List<Contribuable> _contribuables = [];
   PatenteManagement _patenteManagement = PatenteManagement();
-  Future<List<Contribuable>> getContribuables() async {
-    _contribuables = await _patenteManagement.getContribuableAjouteEvents();
-    return _contribuables;
-  }
 
   late Future<List<Contribuable>> _contribuablesFuture;
 
   @override
   void initState() {
     super.initState();
-    _contribuablesFuture = getContribuables();
+    _contribuablesFuture = widget.contribuableListFuture;
   }
 
   @override
@@ -356,6 +393,7 @@ class _ContribuableListState extends State<ContribuableList> {
                 } else if (snapshot.hasData && snapshot.data!.isEmpty) {
                   return Center(child: Text('Aucun agent enregistré.'));
                 } else {
+                  _contribuables = snapshot.data!;
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
@@ -438,6 +476,8 @@ class _ContribuableListState extends State<ContribuableList> {
 
                                                         Navigator.of(context)
                                                             .pop();
+                                                        Navigator.of(context)
+                                                            .pop();
                                                       },
                                                     )
                                                   ]);
@@ -448,7 +488,7 @@ class _ContribuableListState extends State<ContribuableList> {
                                                 await _patenteManagement
                                                     .getContribuableAjouteEvents();
 
-                                            Navigator.pop(context);
+                                            // Navigator.pop(context);
 
                                             return _contribuables;
                                           }
