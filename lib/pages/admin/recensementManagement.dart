@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:web3dart/web3dart.dart';
 
@@ -21,6 +22,11 @@ class _RecensementManagementScreenState
     await _patenteManagement.ajouterContribuable(contribuable,
         EthereumAddress.fromHex("0xC232db3AE5eeaaf67a31cdbA2b448fA323FDABF7"));
 
+    CollectionReference usersRef =
+        FirebaseFirestore.instance.collection('users');
+
+    await usersRef.add(
+        {"email": contribuable.email, "adresseEth": contribuable.ethAddress});
     setState(() {
       _contribuableFuture = updateContribuables();
     });

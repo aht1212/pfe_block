@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
@@ -227,8 +228,20 @@ class PatenteManagement {
                 ],
                 from: addressExpediteur),
             chainId: cId.toInt())
-        .then((value) {
+        .then((value) async {
       print(value.toString());
+
+      try {
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: agent.email,
+          password: agent.nom + agent.prenom,
+        );
+      } on Exception catch (e) {
+        // TODO
+        print('Error creating user $e');
+      }
+
+      // final adresseEth = querySnapshot.docs.first['adresseEth'];
 
       isLoading = false;
       return null;
@@ -356,6 +369,15 @@ class PatenteManagement {
       print(value.toString());
       isLoading = false;
     });
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: contribuable.email,
+        password: contribuable.nom + contribuable.prenom,
+      );
+    } on Exception catch (e) {
+      // TODO
+      print("Error on create user : $e");
+    }
   }
 
 // Supprimer un contribuable

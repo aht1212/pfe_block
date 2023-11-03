@@ -1,5 +1,6 @@
 import 'dart:js_interop';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:pfe_block/services/tax_management_service.dart';
 import 'package:web3dart/web3dart.dart';
@@ -39,6 +40,11 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
         EthereumAddress.fromHex("0xC232db3AE5eeaaf67a31cdbA2b448fA323FDABF7"));
 
     // Mettez à jour la liste des agents après l'ajout
+    CollectionReference usersRef =
+        FirebaseFirestore.instance.collection('users');
+
+    await usersRef
+        .add({"email": agent.email, "adresseEth": agent.ethAddress.hexEip55});
     setState(() {
       _agentsFuture = getAgents();
     });
@@ -59,6 +65,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
         EthereumAddress.fromHex("0xC232db3AE5eeaaf67a31cdbA2b448fA323FDABF7"));
 
 // Ajouter un délai de 500 millisecondes avant de rafraîchir la liste des agents
+
     await Future.delayed(Duration(milliseconds: 500));
 
 // Mettre à jour la liste des agents après la suppression
@@ -437,4 +444,3 @@ class _AgentFormState extends State<AgentForm> {
     );
   }
 }
-
