@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
+import 'package:pfe_block/auth_api.dart';
 import 'package:pfe_block/constants/private_key.dart';
 import 'package:pfe_block/model/activite_model.dart';
 import 'package:pfe_block/model/commerce_model.dart';
@@ -231,15 +232,10 @@ class PatenteManagement {
         .then((value) async {
       print(value.toString());
 
-      try {
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: agent.email,
-          password: agent.nom + agent.prenom,
-        );
-      } on Exception catch (e) {
-        // TODO
-        print('Error creating user $e');
-      }
+      register(
+        agent.email,
+        agent.nom + agent.prenom,
+      );
 
       // final adresseEth = querySnapshot.docs.first['adresseEth'];
 
@@ -369,15 +365,10 @@ class PatenteManagement {
       print(value.toString());
       isLoading = false;
     });
-    try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: contribuable.email,
-        password: contribuable.nom + contribuable.prenom,
-      );
-    } on Exception catch (e) {
-      // TODO
-      print("Error on create user : $e");
-    }
+    register(
+      contribuable.email,
+      contribuable.nom + contribuable.prenom,
+    );
   }
 
 // Supprimer un contribuable

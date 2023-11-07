@@ -1,5 +1,8 @@
+import 'dart:js_interop';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:pfe_block/model/activite_model.dart';
 import 'package:web3dart/web3dart.dart';
 
 import '../../model/contribuable_model.dart';
@@ -25,8 +28,10 @@ class _RecensementManagementScreenState
     CollectionReference usersRef =
         FirebaseFirestore.instance.collection('users');
 
-    await usersRef.add(
-        {"email": contribuable.email, "adresseEth": contribuable.ethAddress});
+    await usersRef.add({
+      "email": contribuable.email,
+      "adresseEth": contribuable.ethAddress.hexEip55
+    });
     setState(() {
       _contribuableFuture = updateContribuables();
     });
@@ -94,6 +99,8 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
   String _typeContribuable = '';
   int _valeurLocative = 0;
   PatenteManagement _patenteManagement = PatenteManagement();
+
+  TextEditingController _activitePrincipaleController = TextEditingController();
   void showLoadingDialog() {
     showDialog(
       context: context,
@@ -113,6 +120,13 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
         );
       },
     );
+  }
+
+  List<Activite> activites = [];
+  Activite? selectedMenu;
+  Future<List<Activite>> getActivites() async {
+    activites = await _patenteManagement.getActivites();
+    return activites;
   }
 
   @override
@@ -202,20 +216,68 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      TextFormField(
-                        decoration: const InputDecoration(
-                            labelText: "ID de l'activité principal"),
-                        keyboardType: TextInputType.number,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Veuillez saisir l'ID de l'activité principale";
-                          }
-                          return null;
-                        },
-                        onSaved: (value) {
-                          _activitePrincipaleId = int.parse(value!);
-                        },
-                      ),
+                      FutureBuilder(
+                          future: getActivites(),
+                          builder: (context, snapshot) {
+                            return MenuAnchor(
+                              builder: (BuildContext context,
+                                  MenuController controller, Widget? child) {
+                                return TextFormField(
+                                  onTap: () {
+                                    if (controller.isOpen) {
+                                      controller.close();
+                                    } else {
+                                      controller.open();
+                                    }
+                                  },
+                                  readOnly: true,
+                                  controller: _activitePrincipaleController,
+                                  decoration: const InputDecoration(
+                                      labelText: "activité principal"),
+                                  keyboardType: TextInputType.number,
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return "Veuillez Selectionner une activité principale";
+                                    }
+                                    return null;
+                                  },
+                                  onSaved: (value) {
+                                    _activitePrincipaleId = selectedMenu!.id!;
+                                  },
+                                );
+                              },
+                              menuChildren: List.generate(
+                                activites.length,
+                                (int index) => SizedBox(
+                                  width: 200,
+                                  child: Center(
+                                    child: MenuItemButton(
+                                      onPressed: () => setState(() {
+                                        selectedMenu = activites[index];
+                                        _activitePrincipaleController.text =
+                                            selectedMenu?.nom ?? '';
+                                      }),
+                                      child: Text(activites[index].nom),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                      // TextFormField(
+                      //   decoration: const InputDecoration(
+                      //       labelText: "ID de l'activité principal"),
+                      //   keyboardType: TextInputType.number,
+                      //   validator: (value) {
+                      //     if (value == null || value.isEmpty) {
+                      //       return "Veuillez saisir l'ID de l'activité principale";
+                      //     }
+                      //     return null;
+                      //   },
+                      //   onSaved: (value) {
+                      //     _activitePrincipaleId = int.parse(value!);
+                      //   },
+                      // ),
                       const SizedBox(height: 16),
                       TextFormField(
                         decoration: const InputDecoration(labelText: 'Adresse'),

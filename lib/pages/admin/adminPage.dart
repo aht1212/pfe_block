@@ -1,3 +1,4 @@
+import 'package:pfe_block/auth_api.dart';
 import 'package:pfe_block/pages/admin/dashboard.dart';
 import 'package:pfe_block/pages/admin/rapport.dart';
 import 'package:pfe_block/pages/admin/recensementManagement.dart';
@@ -25,12 +26,12 @@ class _AdminPageState extends State<AdminPage> {
     MenuModel(icon: 'assets/svg/exercise.svg', title: "Taxe Configuration"),
     MenuModel(icon: 'assets/svg/setting.svg', title: "Recensement"),
     MenuModel(icon: 'assets/svg/history.svg', title: "Recouvrement"),
-    MenuModel(icon: 'assets/svg/signout.svg', title: "Rapport"),
-    // MenuModel(icon: 'assets/svg/signout.svg', title: "Signout"),
+    MenuModel(icon: 'assets/svg/steps.svg', title: "Rapport"),
+    MenuModel(icon: 'assets/svg/signout.svg', title: "Signout"),
   ];
   @override
   Widget build(BuildContext context) {
-    final List<Widget> _screens = [
+    final List<dynamic> _screens = [
       DashboardScreen(
         scaffoldKey: _scaffoldKey,
       ),
@@ -39,7 +40,9 @@ class _AdminPageState extends State<AdminPage> {
       RecensementManagementScreen(),
       RecouvrementManagementScreen(),
       ReportsScreen(),
+      // signOut
     ];
+
     return Scaffold(
         key: _scaffoldKey,
         drawer: !Responsive.isDesktop(context)
@@ -105,9 +108,13 @@ class _AdminPageState extends State<AdminPage> {
                 ),
                 child: InkWell(
                   onTap: () {
-                    setState(() {
-                      selected = i;
-                    });
+                    if (menu[i].title == "Signout") {
+                      signOut();
+                    } else {
+                      setState(() {
+                        selected = i;
+                      });
+                    }
                     _scaffoldKey.currentState!.closeDrawer();
                   },
                   child: Row(
