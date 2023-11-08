@@ -50,19 +50,19 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCZUSwR9TN9zwagQfJXl_N5YwRZNKGwp_U',
-    appId: '1:389602654175:web:e88355944f6660972d366a',
-    messagingSenderId: '389602654175',
-    projectId: 'pfe-block',
-    authDomain: 'pfe-block.firebaseapp.com',
-    storageBucket: 'pfe-block.appspot.com',
+    apiKey: 'AIzaSyDY6tYCdhze0vE9yq9ZvAlx9XP12Cf4z4w',
+    appId: '1:288090153028:web:80c2d3c3664b4a95ad5c11',
+    messagingSenderId: '288090153028',
+    projectId: 'pfe-eni',
+    authDomain: 'pfe-eni.firebaseapp.com',
+    storageBucket: 'pfe-eni.appspot.com',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBUAfq4STDDR16nIXUD5SrPZ1EhtPcSQuc',
-    appId: '1:389602654175:android:6f3bd7a42c53dc322d366a',
-    messagingSenderId: '389602654175',
-    projectId: 'pfe-block',
-    storageBucket: 'pfe-block.appspot.com',
+    apiKey: 'AIzaSyBkC5eV3KzjorV_HRsOEoW7kfF1cD0N-04',
+    appId: '1:288090153028:android:b23201a53fe4152bad5c11',
+    messagingSenderId: '288090153028',
+    projectId: 'pfe-eni',
+    storageBucket: 'pfe-eni.appspot.com',
   );
 }

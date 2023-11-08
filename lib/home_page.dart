@@ -30,6 +30,7 @@ class _MyHomeRealPageState extends State<MyHomeRealPage> {
   Future<String> getUserType() async {
     EthereumAddress address = EthereumAddress.fromHex(widget.addressConnected);
     String result = await patenteManagem.getTypeUtilisateur(address);
+    
     setState(() {
       userType = result;
     });

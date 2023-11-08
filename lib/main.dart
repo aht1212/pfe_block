@@ -4,21 +4,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pfe_block/homePageTestMetamaskTest.dart';
 import 'package:pfe_block/home_page.dart';
 import 'package:pfe_block/signIn.dart';
 
+import 'firebase_options.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  defaultTargetPlatform == TargetPlatform.android
-      ? await Firebase.initializeApp()
-      : await Firebase.initializeApp(
-          options: FirebaseOptions(
-          apiKey: "AIzaSyDY6tYCdhze0vE9yq9ZvAlx9XP12Cf4z4w",
-          appId: "1:288090153028:web:80c2d3c3664b4a95ad5c11",
-          messagingSenderId: "288090153028",
-          projectId: "pfe-eni",
-        ));
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(MyApp());
 }
