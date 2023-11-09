@@ -40,13 +40,18 @@ class PatenteManagement {
   }
 
   setup() async {
-    _web3client = Web3Client(
-      rpcUrl,
-      Client(),
-      socketConnector: () {
-        return IOWebSocketChannel.connect(wsUrl).cast<String>();
-      },
-    );
+    _web3client = defaultTargetPlatform == TargetPlatform.android
+        ? Web3Client(
+            rpcUrl,
+            Client(),
+          )
+        : Web3Client(
+            rpcUrl,
+            Client(),
+            socketConnector: () {
+              return IOWebSocketChannel.connect(wsUrl).cast<String>();
+            },
+          );
     await getAbi();
     await getCredentials();
     await getDeployedContract();
@@ -467,10 +472,13 @@ class PatenteManagement {
 
     await setup();
 
-    final function = _contract?.function("getTypeUtilisateur");
+    final function = _contract!.function("getTypeUtilisateur");
+
+    BigInt cId = await _web3client!.getChainId();
+
     var result = await _web3client!.call(
         contract: _contract!,
-        function: function!,
+        function: function,
         params: [adresse],
         atBlock: const BlockNum.current());
     return result[0].toString();

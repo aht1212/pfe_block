@@ -29,8 +29,9 @@ class _MyHomeRealPageState extends State<MyHomeRealPage> {
 
   Future<String> getUserType() async {
     EthereumAddress address = EthereumAddress.fromHex(widget.addressConnected);
+    await patenteManagem.getActivites();
+    print("lol");
     String result = await patenteManagem.getTypeUtilisateur(address);
-    
     setState(() {
       userType = result;
     });
@@ -39,12 +40,18 @@ class _MyHomeRealPageState extends State<MyHomeRealPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    typeUser = getUserType();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         Expanded(
           child: FutureBuilder(
-              future: getUserType(),
+              future: typeUser,
               builder: (context, AsyncSnapshot<dynamic> snapshot) {
                 if (snapshot.hasData) {
                   final String data = snapshot.requireData;
@@ -70,7 +77,6 @@ class _MyHomeRealPageState extends State<MyHomeRealPage> {
                   }
                 }
                 if (snapshot.hasError) {
-                  
                   return Center(
                     child: CircularProgressIndicator.adaptive(),
                   );
