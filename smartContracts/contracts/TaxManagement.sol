@@ -7,10 +7,10 @@ contract TaxManagement {
 
 
 
-  // event AgentAjoute(uint id, address indexed agentAddress, string nom, string prenom, string adresse, string email, uint256 telephone, bool estEnregister);
-  // event ContribuableAjoute(uint id, address indexed contribuableAddress, string nom, string prenom, string adresse, string email, uint256 telephone,bool estEnregister);
-  // event CommerceAjoute(uint id, string nom, string adresse, address indexed contribuableAddress, uint valeurLocative, uint activitePrincipaleId, address indexed agentAddress, bool estEnregister);
-  event patentePayer(uint id,uint contribuableId, uint droitFixe, uint droitProportionnelle, uint annePaiement, uint sommePayee, bool estPayee ); 
+    event patentePayer(uint id,uint contribuableId, uint droitFixe, uint droitProportionnelle, uint annePaiement, uint sommePayee, bool estPayee ); 
+    event PlaceOccupee(uint indexed marcheId, uint indexed date, address indexed contributeur, uint place);
+
+   
     address public admin;
     
     mapping(address => bool) public estAgent;
@@ -18,10 +18,10 @@ contract TaxManagement {
     mapping(address => Admin) public admins;
     mapping(uint => Agent) public agents;
     mapping(uint => Contribuable) public contribuables;
-    // mapping(uint => Commerce) public commerces;
     mapping(uint => ActivitePrincipale) public activitePrincipale;
     mapping(uint => Patente) public patentes;
     string[] public classes = ["Exceptionnelle", '1' , '2', '3', '4', '5', '6','7','8','9']; 
+    mapping(uint => Marche) public marches;
 
     Agent[] public allAgents;
    
@@ -30,6 +30,7 @@ contract TaxManagement {
     uint public activitePrincipaleCount = 0;
     uint public agentCount = 0; 
     uint public patentesCount= 0; 
+    uint public marcheCount = 0;
 
     uint public currentYear = 2023; 
 
@@ -66,22 +67,21 @@ contract TaxManagement {
         string email;
         uint contact;
         uint valeurLocative; 
+        uint nombreEmployes;
+        string anneeModification;
+        uint agentId; 
         string typeContribuable;
         string dateCreation; 
         bool estEnregistre;
     }
     
-    // struct Commerce {
-    //     uint id;
-    //     string nom;
-    //     string adresse;
-    //     address contribuableAddress; // Adresse Ethereum du contribuable qui ajoute le commerce
-    //     uint valeurLocative;
-    //     uint activitePrincipale;
-    //     address agentAddress; // Adresse 
-    // Ethereum de l'agent qui ajoute le commerce
-    //     bool estEnregistre;
-    // }
+     struct Marche {
+        uint id;
+        string nom;
+        uint nombrePlaces;
+        uint prixPlace;
+        mapping(uint => mapping(uint => bool)) placesOccupees; // Mapping des places occupées par date
+    }
     
     struct ActivitePrincipale {
         uint id;
@@ -99,6 +99,7 @@ contract TaxManagement {
     uint anneePaiement;
     bool estPayee;
 }
+
 
     
     constructor() {
@@ -142,7 +143,7 @@ contract TaxManagement {
     }
 
     
-    function ajouterContribuable(address  _ethAddress, string memory _nif,string memory _denomination,uint  _activitePrincipaleId,   string memory _nom, string memory _prenom, string memory _adresse, string memory _email, uint _contact, string memory _typeContribuable, string memory _dateCreation, uint  _valeurLocative) public seulementAdmin {
+    function ajouterContribuable(address  _ethAddress, string memory _nif,string memory _denomination,uint  _activitePrincipaleId,   string memory _nom, string memory _prenom, string memory _adresse, string memory _email, uint _contact, string memory _typeContribuable, string memory _dateCreation, uint  _valeurLocative,uint _nombreEmployee, string memory _anneeModification,uint _agentId ) public seulementAdmin {
         require(!estContribuable[_ethAddress], "Ce contribuable est deja enregistre.");
         
         Contribuable memory nouveauContribuable = Contribuable({
@@ -157,6 +158,9 @@ contract TaxManagement {
             email: _email,
             contact: _contact,
             valeurLocative : _valeurLocative,
+            nombreEmployes : _nombreEmployee,
+            anneeModification: _anneeModification,
+            agentId : _agentId, 
             typeContribuable : _typeContribuable, 
             dateCreation : _dateCreation,  
             estEnregistre: true
@@ -221,7 +225,7 @@ contract TaxManagement {
 function payerPatente(uint patenteId, uint sommePayee) public seulementContribuable {
     require(!patentes[patenteId].estPayee, "Cette patente a deja ete payee.");
     
-    // Mettre à jour la propriété estPayee de la patente
+    // Mettre a jour la propriete estPayee de la patente
     if (sommePayee >= (patentes[patenteId].droitProportionnel + patentes[patenteId].droitFixe)) {
       
       patentes[patenteId].estPayee = true;
@@ -234,8 +238,8 @@ function payerPatente(uint patenteId, uint sommePayee) public seulementContribua
     }
     
     // Envoyer les fonds vers le service des impots
-    // Mettre à jour l'année de paiement de la patente
-    // patentes[patenteId].anneePaiement = 2024; // Mettre l'année de paiement suivante ici
+    // Mettre a jour l'annee de paiement de la patente
+    // patentes[patenteId].anneePaiement = 2024; // Mettre l'annee de paiement suivante ici
 }
 
 
@@ -387,5 +391,40 @@ function getPatenteByContribuable(address _contribuableAdress) public view retur
 }
 return patenteList; 
 }
+ 
+    function ajouterMarche(string memory _nom, uint _nombrePlaces, uint _prixPlace) public onlyAdmin {
+        marcheCount++;
+        
+        Marche storage nouveauMarche = marches[marcheCount];
+        nouveauMarche.id = marcheCount;
+        nouveauMarche.nom = _nom;
+        nouveauMarche.nombrePlaces = _nombrePlaces;
+        nouveauMarche.prixPlace = _prixPlace;
+        
+        // Initialiser les places comme non occupees pour chaque date
+        for (uint i = 0; i < 365; i++) {
+            for (uint j = 0; j < _nombrePlaces; j++) {
+                nouveauMarche.placesOccupees[i][j] = false;
+            }
+        }
+    }
+    
+    function reserverPlace(uint _marcheId, uint _date, uint _place) public {
+        require(estContribuable[msg.sender], "Seul un contribuable peut effectuer cette action");
+        require(_marcheId <= marcheCount, "Marche inexistant");
+        
+        Marche storage marche = marches[_marcheId];
+        
+        require(_date < 365, "Date invalide");
+        require(_place < marche.nombrePlaces, "Place invalide");
+        
+        require(!marche.placesOccupees[_date][_place], "Cette place est deja occupee");
+        
+        marche.placesOccupees[_date][_place] = true;
 
+        // Emettre un evenement pour enregistrer l'occupation de la place
+        emit PlaceOccupee(_marcheId, msg.sender, _date, _place);
+    }
+    
+    event PlaceOccupee(uint indexed marcheId, address indexed contributeur, uint indexed date, uint place);
 }
