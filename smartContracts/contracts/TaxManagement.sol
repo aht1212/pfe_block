@@ -8,7 +8,7 @@ contract TaxManagement {
 
 
     event patentePayer(uint id,uint contribuableId, uint droitFixe, uint droitProportionnelle, uint annePaiement, uint sommePayee, bool estPayee ); 
-    event PlaceOccupee(uint indexed marcheId, uint indexed date, address indexed contributeur, uint place);
+    event PlaceOccupee(uint indexed marcheId, uint indexed date, uint contributeur, uint place);
 
    
     address public admin;
@@ -20,8 +20,9 @@ contract TaxManagement {
     mapping(uint => Contribuable) public contribuables;
     mapping(uint => ActivitePrincipale) public activitePrincipale;
     mapping(uint => Patente) public patentes;
-    string[] public classes = ["Exceptionnelle", '1' , '2', '3', '4', '5', '6','7','8','9']; 
+    // string[] public classes = ["Exceptionnelle", '1' , '2', '3', '4', '5', '6','7','8','9']; 
     mapping(uint => Marche) public marches;
+    mapping(uint => DemandeOccupation) public demandesOccupation;
 
     Agent[] public allAgents;
    
@@ -31,6 +32,7 @@ contract TaxManagement {
     uint public agentCount = 0; 
     uint public patentesCount= 0; 
     uint public marcheCount = 0;
+    uint public demandeOccupationCount = 0;
 
     uint public currentYear = 2023; 
 
@@ -75,13 +77,25 @@ contract TaxManagement {
         bool estEnregistre;
     }
     
-     struct Marche {
+      struct Marche {
         uint id;
         string nom;
         uint nombrePlaces;
         uint prixPlace;
-        mapping(uint => mapping(uint => bool)) placesOccupees; // Mapping des places occupées par date
+        uint placesOccupees; // Mapping des places occupees par date
     }
+    
+    struct DemandeOccupation {
+        uint idOccupation;
+        uint idMarche; // ID du marche demande
+        string dateDebut; // Date de debut demandee
+        string dateFin; // Date de fin demandee
+        uint idContribuable; // ID du contribuable demandeur
+        bool estValidee; // Indique si la demande a ete validee par l'agent
+    }
+    
+    event DemandeOccupationCreee(uint idOccupation, uint idMarche, string dateDebut, string dateFin, uint idContribuable);
+    event DemandeOccupationValidee(uint idOccupation, uint idMarche, uint place, string dateDebut, string dateFin, uint idContribuable, address agent);
     
     struct ActivitePrincipale {
         uint id;
@@ -121,6 +135,46 @@ contract TaxManagement {
         _;
     }
     
+
+    function creerDemandeOccupation(uint idContribuable, uint _idMarche, string memory _dateDebut, string memory _dateFin) public seulementContribuable {
+        // require(estContribuable[msg.sender], "Seuls les contribuables peuvent creer une demande d'occupation");
+        require(marches[_idMarche].placesOccupees < marches[_idMarche].nombrePlaces, "Il n'y a plus de places disponibles" );
+        demandeOccupationCount++;
+        
+        DemandeOccupation storage nouvelleDemande = demandesOccupation[demandeOccupationCount];
+        nouvelleDemande.idOccupation = demandeOccupationCount;
+        nouvelleDemande.idMarche = _idMarche;
+        nouvelleDemande.dateDebut = _dateDebut;
+        nouvelleDemande.dateFin = _dateFin;
+        nouvelleDemande.idContribuable = idContribuable;
+        
+        emit DemandeOccupationCreee(demandeOccupationCount, _idMarche, _dateDebut, _dateFin, idContribuable);
+    }
+    
+    function validerDemandeOccupation(uint _idOccupation) public  {
+        require(demandesOccupation[_idOccupation].idOccupation != 0, "La demande d'occupation n'existe pas");
+        
+        DemandeOccupation storage demande = demandesOccupation[_idOccupation];
+        
+        demande.estValidee = true;
+
+        emit DemandeOccupationValidee(_idOccupation, demande.idMarche, marches[demande.idMarche].placesOccupees, demande.dateDebut, demande.dateFin, demande.idContribuable, msg.sender);
+
+
+        marches[demande.idMarche].placesOccupees++;
+
+        
+    }
+    
+    function getDemandeOccupation(uint _idOccupation) public view returns (DemandeOccupation memory) {
+        require(demandesOccupation[_idOccupation].idOccupation != 0, "La demande d'occupation n'existe pas");
+        
+        DemandeOccupation storage demande = demandesOccupation[_idOccupation];
+        
+        return DemandeOccupation(demande.idOccupation, demande.idMarche, demande.dateDebut, demande.dateFin, demande.idContribuable, demande.estValidee);
+    }
+    
+
     function ajouterAgent(address _ethAddress, string memory _nom, string memory _prenom, string memory _adresse, string memory _email, uint _telephone) public seulementAdmin {
         require(!estAgent[_ethAddress], "Cet agent est deja enregistre.");
         
@@ -292,7 +346,8 @@ function modifierAgent(address _ethAddress, string memory _nom, string memory _p
     }
    
 }
-function modifierContribuable(address _ethAddress,string memory _denomination,uint _activitePrincipaleId, string memory _nom, string memory _prenom, string memory _adresse, string memory _email, uint _contact,string memory _typeContribuable,  uint _valeurLocative) public seulementAdmin {
+function modifierContribuable(address _ethAddress,string memory _denomination,uint _activitePrincipaleId, string memory _nom, string memory _prenom, string memory _adresse, string memory _email, uint _contact,string memory _typeContribuable,  uint _valeurLocative,  uint _nombreEmployes,
+        string memory _anneeModification, uint _agentId ) public seulementAdmin {
     require(estContribuable[_ethAddress], "Ce contribuable n'est pas enregistre.");
    for (uint index = 0; index < contribuableCount; index++) {
     if(_ethAddress == contribuables[index].ethAddress){
@@ -303,6 +358,9 @@ function modifierContribuable(address _ethAddress,string memory _denomination,ui
     contribuable.email = _email;
     contribuable.contact = _contact;
     contribuable.valeurLocative = _valeurLocative; 
+    contribuable.nombreEmployes = _nombreEmployes;
+    contribuable.anneeModification= _anneeModification;
+    contribuable.agentId = _agentId; 
     contribuable.activitePrincipaleId= _activitePrincipaleId; 
     contribuable.denomination = _denomination;
     contribuable.typeContribuable = _typeContribuable;
@@ -392,7 +450,7 @@ function getPatenteByContribuable(address _contribuableAdress) public view retur
 return patenteList; 
 }
  
-    function ajouterMarche(string memory _nom, uint _nombrePlaces, uint _prixPlace) public onlyAdmin {
+    function ajouterMarche(string memory _nom, uint _nombrePlaces, uint _prixPlace) public seulementAdmin {
         marcheCount++;
         
         Marche storage nouveauMarche = marches[marcheCount];
@@ -400,31 +458,20 @@ return patenteList;
         nouveauMarche.nom = _nom;
         nouveauMarche.nombrePlaces = _nombrePlaces;
         nouveauMarche.prixPlace = _prixPlace;
-        
-        // Initialiser les places comme non occupees pour chaque date
-        for (uint i = 0; i < 365; i++) {
-            for (uint j = 0; j < _nombrePlaces; j++) {
-                nouveauMarche.placesOccupees[i][j] = false;
-            }
-        }
+        nouveauMarche.placesOccupees = 0;  
+       
     }
     
-    function reserverPlace(uint _marcheId, uint _date, uint _place) public {
-        require(estContribuable[msg.sender], "Seul un contribuable peut effectuer cette action");
-        require(_marcheId <= marcheCount, "Marche inexistant");
-        
-        Marche storage marche = marches[_marcheId];
-        
-        require(_date < 365, "Date invalide");
-        require(_place < marche.nombrePlaces, "Place invalide");
-        
-        require(!marche.placesOccupees[_date][_place], "Cette place est deja occupee");
-        
-        marche.placesOccupees[_date][_place] = true;
-
-        // Emettre un evenement pour enregistrer l'occupation de la place
-        emit PlaceOccupee(_marcheId, msg.sender, _date, _place);
-    }
+    function getMarches() public view returns (Marche[] memory) {
+  Marche[] memory marchesList = new Marche[](marcheCount);
+  uint counter = 0;
+  for (uint id = 0; id < marcheCount; id++){
+   
+      marchesList[counter] = marches[id];
+      counter++;
     
-    event PlaceOccupee(uint indexed marcheId, address indexed contributeur, uint indexed date, uint place);
+      }
+      return marchesList;
+}
+   
 }

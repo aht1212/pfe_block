@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:pfe_block/model/activite_model.dart';
@@ -95,6 +94,9 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
   String _adresse = '';
   String _email = '';
   int _contact = 0;
+  int _nbreEmployes = 0;
+  int _agentId = 0;
+
   String _typeContribuable = '';
   int _valeurLocative = 0;
   PatenteManagement _patenteManagement = PatenteManagement();
@@ -370,7 +372,10 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
                         contact: _contact,
                         valeurLocative: _valeurLocative,
                         typeContribuable: _typeContribuable,
-                        dateCreation: DateTime.now().toLocal().toString()));
+                        dateCreation: DateTime.now().toLocal().toString(),
+                        nombreEmployes: _nbreEmployes,
+                        anneeModification: DateTime.now().toString(),
+                        agentId: _agentId));
                   }
 
                   Navigator.of(context).pop();
@@ -394,6 +399,8 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
     String adresse,
     String email,
     int contact,
+    int agentId,
+    int nbreEmployee,
     String typeContribuable,
     int valeurLocative,
   ) async {
@@ -414,6 +421,9 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
           typeContribuable: typeContribuable,
           valeurLocative: valeurLocative,
           dateCreation: DateTime.now().toString(),
+          nombreEmployes: nbreEmployee,
+          anneeModification: DateTime.now().toString(),
+          agentId: agentId,
         ),
         EthereumAddress.fromHex("0xC232db3AE5eeaaf67a31cdbA2b448fA323FDABF7"));
   }
@@ -471,8 +481,6 @@ class _ContribuableListState extends State<ContribuableList> {
                               const DataColumn(label: Text('Nom')),
                               const DataColumn(label: Text('Prénom')),
                               const DataColumn(label: Text('Dénomination')),
-
-                              // const DataColumn(label: Text('NIF')),
                               const DataColumn(label: Text('Adresse')),
                               const DataColumn(label: Text('Type')),
                               const DataColumn(label: Text('Actions')),
@@ -489,15 +497,6 @@ class _ContribuableListState extends State<ContribuableList> {
                                     IconButton(
                                       icon: const Icon(Icons.edit),
                                       onPressed: () {
-                                        // Ouvrir l'écran de modification du Contribuable
-                                        // Navigator.push(
-                                        //   context,
-                                        //   MaterialPageRoute(
-                                        //     builder: (context) => EditContribuableScreen(
-                                        //       contribuable: contribuable,
-                                        //     ),
-                                        //   ),
-                                        // );
                                       },
                                     ),
                                     IconButton(
@@ -554,8 +553,6 @@ class _ContribuableListState extends State<ContribuableList> {
                                             _contribuables =
                                                 await _patenteManagement
                                                     .getContribuableAjouteEvents();
-
-                                            // Navigator.pop(context);
 
                                             return _contribuables;
                                           }

@@ -113,6 +113,8 @@ module.exports = {
          enabled: true,
          runs: 500
        },
+       viaIR: true,
+
       //  evmVersion: "merge"
       }
     }

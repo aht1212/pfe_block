@@ -9,6 +9,7 @@ import 'package:pfe_block/constants/private_key.dart';
 import 'package:pfe_block/model/activite_model.dart';
 import 'package:pfe_block/model/commerce_model.dart';
 import 'package:pfe_block/model/contribuable_model.dart';
+import 'package:pfe_block/pages/admin/marchePage.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:web_socket_channel/io.dart';
 
@@ -130,27 +131,27 @@ class PatenteManagement {
     return contribuables;
   }
 
-  Future<List<Commerce>> getCommerceAjouteEvents() async {
+  Future<List<Marche>> getMarcheAjouteEvents() async {
     isLoading = true;
 
-    final commerceAjouteEvent = _contract!.events[1];
+    final marcheAjouteEvent = _contract!.events[1];
     final filter = FilterOptions.events(
       contract: _contract!,
-      event: commerceAjouteEvent,
+      event: marcheAjouteEvent,
       fromBlock: BlockNum.genesis(),
       toBlock: BlockNum.current(),
     );
     final logs = await _web3client!.getLogs(filter);
 
-    List<Commerce> commerces = [];
+    List<Marche> marches = [];
     for (var log in logs) {
-      final decoded = commerceAjouteEvent.decodeResults(log.topics!, log.data!);
-      Commerce commerce = Commerce.fromEvent(decoded);
-      commerces.add(commerce);
-      print(commerce.toJson());
+      final decoded = marcheAjouteEvent.decodeResults(log.topics!, log.data!);
+      Marche marche = Marche.fromEvent(decoded);
+      marches.add(marche);
+      print(marche.toString());
     }
 
-    return commerces;
+    return marches;
   }
 
   Future<List<TypeCommerce>> getTypeCommerceAjouteEvents() async {
@@ -362,7 +363,10 @@ class PatenteManagement {
                   BigInt.from(contribuable.contact),
                   contribuable.typeContribuable,
                   contribuable.dateCreation,
-                  BigInt.from(contribuable.valeurLocative)
+                  BigInt.from(contribuable.valeurLocative),
+                  BigInt.from(contribuable.nombreEmployes),
+                  contribuable.anneeModification,
+                  contribuable.agentId
                 ],
                 from: addressExpediteur),
             chainId: cId.toInt())

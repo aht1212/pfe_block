@@ -1,6 +1,6 @@
 import 'package:pfe_block/auth_api.dart';
 import 'package:pfe_block/pages/admin/dashboard.dart';
-import 'package:pfe_block/pages/admin/rapport.dart';
+import 'package:pfe_block/pages/admin/marchePage.dart';
 import 'package:pfe_block/pages/admin/recensementManagement.dart';
 import 'package:pfe_block/pages/admin/recouvrementManagement.dart';
 import 'package:pfe_block/pages/admin/taxeConfiguration.dart';
@@ -26,7 +26,7 @@ class _AdminPageState extends State<AdminPage> {
     MenuModel(icon: 'assets/svg/exercise.svg', title: "Taxe Configuration"),
     MenuModel(icon: 'assets/svg/setting.svg', title: "Recensement"),
     MenuModel(icon: 'assets/svg/history.svg', title: "Recouvrement"),
-    MenuModel(icon: 'assets/svg/steps.svg', title: "Rapport"),
+    MenuModel(icon: 'assets/svg/steps.svg', title: "Marchés"),
     MenuModel(icon: 'assets/svg/signout.svg', title: "Signout"),
   ];
   @override
@@ -39,7 +39,7 @@ class _AdminPageState extends State<AdminPage> {
       TaxConfigurationScreen(),
       RecensementManagementScreen(),
       RecouvrementManagementScreen(),
-      ReportsScreen(),
+      MarchesScreen(),
       // signOut
     ];
 

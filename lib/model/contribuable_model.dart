@@ -12,6 +12,9 @@ class Contribuable {
   String email;
   int contact;
   int valeurLocative;
+  int nombreEmployes;
+  String anneeModification;
+  int agentId;
   String typeContribuable;
   String dateCreation;
   bool? estEnregistre;
@@ -28,6 +31,9 @@ class Contribuable {
     required this.email,
     required this.contact,
     required this.valeurLocative,
+    required this.nombreEmployes, 
+    required this.anneeModification, 
+    required this.agentId,
     required this.typeContribuable,
     required this.dateCreation,
     this.estEnregistre,
@@ -46,9 +52,12 @@ class Contribuable {
       email: json[8],
       contact: json[9].toInt(),
       valeurLocative: json[10].toInt(),
-      typeContribuable: json[11],
-      dateCreation: json[12],
-      estEnregistre: json[13],
+      nombreEmployes: json[11].toInt(),
+      anneeModification: json[12],
+      agentId: json[13].toInt(),
+      typeContribuable: json[14],
+      dateCreation: json[15],
+      estEnregistre: json[16]
     );
   }
 
