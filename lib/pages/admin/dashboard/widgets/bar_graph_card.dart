@@ -11,35 +11,41 @@ class BarGraphCard extends StatelessWidget {
 
   final List<BarGraphModel> data = [
     BarGraphModel(
-        lable: "Activity Level",
-        color: const Color(0xFFFEB95A),
-        graph: [
-          GraphModel(x: 0, y: 8),
-          GraphModel(x: 1, y: 10),
-          GraphModel(x: 2, y: 7),
-          GraphModel(x: 3, y: 4),
-          GraphModel(x: 4, y: 4),
-          GraphModel(x: 5, y: 6),
-        ]),
-    BarGraphModel(lable: "Nutrition", color: const Color(0xFFF2C8ED), graph: [
-      GraphModel(x: 0, y: 8),
-      GraphModel(x: 1, y: 10),
-      GraphModel(x: 2, y: 9),
-      GraphModel(x: 3, y: 6),
-      GraphModel(x: 4, y: 6),
-      GraphModel(x: 5, y: 7),
-    ]),
+      lable: "Revenu Mensuel",
+      color: const Color(0xFFFEB95A),
+      graph: [
+        GraphModel(x: 0, y: 8000), // Exemple : Revenu mensuel de 8000
+        GraphModel(x: 1, y: 8500), // Exemple : Revenu mensuel de 8500
+        GraphModel(x: 2, y: 9000), // Exemple : Revenu mensuel de 9000
+        GraphModel(x: 3, y: 9500), // Exemple : Revenu mensuel de 9500
+        GraphModel(x: 4, y: 10000), // Exemple : Revenu mensuel de 10000
+        GraphModel(x: 5, y: 10500), // Exemple : Revenu mensuel de 10500
+      ],
+    ),
     BarGraphModel(
-        lable: "Hydration Level",
-        color: const Color(0xFF20AEF3),
-        graph: [
-          GraphModel(x: 0, y: 7),
-          GraphModel(x: 1, y: 10),
-          GraphModel(x: 2, y: 7),
-          GraphModel(x: 3, y: 4),
-          GraphModel(x: 4, y: 4),
-          GraphModel(x: 5, y: 10),
-        ]),
+      lable: "Dépenses Quotidiennes",
+      color: const Color(0xFFF2C8ED),
+      graph: [
+        GraphModel(x: 0, y: 120), // Exemple : Dépenses quotidiennes de 120
+        GraphModel(x: 1, y: 130), // Exemple : Dépenses quotidiennes de 130
+        GraphModel(x: 2, y: 110), // Exemple : Dépenses quotidiennes de 110
+        GraphModel(x: 3, y: 140), // Exemple : Dépenses quotidiennes de 140
+        GraphModel(x: 4, y: 120), // Exemple : Dépenses quotidiennes de 120
+        GraphModel(x: 5, y: 130), // Exemple : Dépenses quotidiennes de 130
+      ],
+    ),
+    BarGraphModel(
+      lable: "Solde du Compte",
+      color: const Color(0xFFFFC107),
+      graph: [
+        GraphModel(x: 0, y: 4500), // Exemple : Solde actuel du compte de 4500
+        GraphModel(x: 1, y: 4600), // Exemple : Solde actuel du compte de 4600
+        GraphModel(x: 2, y: 4700), // Exemple : Solde actuel du compte de 4700
+        GraphModel(x: 3, y: 4800), // Exemple : Solde actuel du compte de 4800
+        GraphModel(x: 4, y: 4900), // Exemple : Solde actuel du compte de 4900
+        GraphModel(x: 5, y: 5000), // Exemple : Solde actuel du compte de 5000
+      ],
+    ),
   ];
 
   final lable = ['M', 'T', 'W', 'T', 'F', 'S'];
@@ -49,7 +55,7 @@ class BarGraphCard extends StatelessWidget {
     return GridView.builder(
       itemCount: data.length,
       shrinkWrap: true,
-       physics: const ScrollPhysics(),
+      physics: const ScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: Responsive.isMobile(context) ? 1 : 3,
           crossAxisSpacing: !Responsive.isMobile(context) ? 15 : 12,

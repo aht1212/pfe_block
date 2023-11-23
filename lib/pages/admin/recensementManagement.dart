@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:pfe_block/model/activite_model.dart';
+import 'package:pfe_block/model/agent_model.dart';
 import 'package:web3dart/web3dart.dart';
 
 import '../../model/contribuable_model.dart';
@@ -19,28 +20,8 @@ class _RecensementManagementScreenState
   final PatenteManagement _patenteManagement = PatenteManagement();
 
   List<Contribuable> _contribuables = [];
-  Future<void> _ajouterContribuable(Contribuable contribuable) async {
-    await _patenteManagement.ajouterContribuable(contribuable,
-        EthereumAddress.fromHex("0xC232db3AE5eeaaf67a31cdbA2b448fA323FDABF7"));
-
-    CollectionReference usersRef =
-        FirebaseFirestore.instance.collection('users');
-
-    await usersRef.add({
-      "email": contribuable.email,
-      "adresseEth": contribuable.ethAddress.hexEip55
-    });
-    setState(() {
-      _contribuableFuture = updateContribuables();
-    });
-  }
 
   Future<List<Contribuable>> getContribuables() async {
-    _contribuables = await _patenteManagement.getContribuableAjouteEvents();
-    return _contribuables;
-  }
-
-  Future<List<Contribuable>> updateContribuables() async {
     _contribuables = await _patenteManagement.getContribuableAjouteEvents();
     return _contribuables;
   }
@@ -58,11 +39,6 @@ class _RecensementManagementScreenState
     return Row(
       children: [
         Expanded(
-            flex: 2,
-            child: RegisterContribuableForm(
-              onAjouterContribuable: _ajouterContribuable,
-            )),
-        Expanded(
             flex: 5,
             child: ContribuableList(
               contribuableListFuture: _contribuableFuture,
@@ -73,10 +49,9 @@ class _RecensementManagementScreenState
 }
 
 class RegisterContribuableForm extends StatefulWidget {
-  final Function(Contribuable) onAjouterContribuable;
-
-  const RegisterContribuableForm(
-      {super.key, required this.onAjouterContribuable});
+  const RegisterContribuableForm({
+    super.key,
+  });
 
   @override
   _RegisterContribuableFormState createState() =>
@@ -102,6 +77,7 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
   PatenteManagement _patenteManagement = PatenteManagement();
 
   TextEditingController _activitePrincipaleController = TextEditingController();
+  TextEditingController _agentFormController = TextEditingController();
   void showLoadingDialog() {
     showDialog(
       context: context,
@@ -124,10 +100,17 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
   }
 
   List<Activite> activites = [];
+  List<Agent> agents = [];
   Activite? selectedMenu;
+  Agent? selectedMenuAgent;
   Future<List<Activite>> getActivites() async {
     activites = await _patenteManagement.getActivites();
     return activites;
+  }
+
+  Future<List<Agent>> getAgents() async {
+    agents = await _patenteManagement.getAgentAjouteEvents();
+    return agents;
   }
 
   @override
@@ -145,212 +128,256 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
           child: Column(
             children: [
               Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      TextFormField(
-                        decoration:
-                            const InputDecoration(labelText: 'Adresse Compte'),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Veuillez saisir l adresse du contribuable';
-                          }
-                          return null;
-                        },
-                        onSaved: (value) {
-                          _ethAdress = value!;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        decoration: const InputDecoration(
-                            labelText: 'Nom du contribuable'),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Veuillez saisir le nom du contribuable';
-                          }
-                          return null;
-                        },
-                        onSaved: (value) {
-                          _name = value!;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        decoration: const InputDecoration(labelText: 'Prénom'),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Veuillez saisir le prénom du contribuable';
-                          }
-                          return null;
-                        },
-                        onSaved: (value) {
-                          _prenom = value!;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        decoration: const InputDecoration(labelText: 'NIF'),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Veuillez saisir le NIF';
-                          }
-                          return null;
-                        },
-                        onSaved: (value) {
-                          _nif = value!;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        decoration:
-                            const InputDecoration(labelText: 'Dénomination'),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Veuillez saisir la dénomination du contribuable';
-                          }
-                          return null;
-                        },
-                        onSaved: (value) {
-                          _denomination = value!;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      FutureBuilder(
-                          future: getActivites(),
-                          builder: (context, snapshot) {
-                            return MenuAnchor(
-                              builder: (BuildContext context,
-                                  MenuController controller, Widget? child) {
-                                return TextFormField(
-                                  onTap: () {
-                                    if (controller.isOpen) {
-                                      controller.close();
-                                    } else {
-                                      controller.open();
-                                    }
-                                  },
-                                  readOnly: true,
-                                  controller: _activitePrincipaleController,
-                                  decoration: const InputDecoration(
-                                      labelText: "activité principal"),
-                                  keyboardType: TextInputType.number,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return "Veuillez Selectionner une activité principale";
-                                    }
-                                    return null;
-                                  },
-                                  onSaved: (value) {
-                                    _activitePrincipaleId = selectedMenu!.id!;
-                                  },
-                                );
-                              },
-                              menuChildren: List.generate(
-                                activites.length,
-                                (int index) => SizedBox(
-                                  width: 200,
-                                  child: Center(
-                                    child: MenuItemButton(
-                                      onPressed: () => setState(() {
-                                        selectedMenu = activites[index];
-                                        _activitePrincipaleController.text =
-                                            selectedMenu?.nom ?? '';
-                                      }),
-                                      child: Text(activites[index].nom),
-                                    ),
+                child: GridView.count(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 8.0,
+                  mainAxisSpacing: 6.0,
+                  shrinkWrap: true,
+                  childAspectRatio: 3,
+                  // crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    buildTextFormField(
+                      labelText: 'Adresse Compte',
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Veuillez saisir l adresse du contribuable';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        _ethAdress = value!;
+                      },
+                    ),
+                    buildTextFormField(
+                      labelText: 'Nom du contribuable',
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Veuillez saisir le nom du contribuable';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        _name = value!;
+                      },
+                    ),
+                    buildTextFormField(
+                      labelText: 'Prénom',
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Veuillez saisir le prénom du contribuable';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        _prenom = value!;
+                      },
+                    ),
+                    buildTextFormField(
+                      labelText: 'NIF',
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Veuillez saisir le NIF';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        _nif = value!;
+                      },
+                    ),
+                    buildTextFormField(
+                      labelText: 'Dénomination',
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Veuillez saisir la dénomination du contribuable';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        _denomination = value!;
+                      },
+                    ),
+                    FutureBuilder(
+                        future: getActivites(),
+                        builder: (context, snapshot) {
+                          return MenuAnchor(
+                            builder: (BuildContext context,
+                                MenuController controller, Widget? child) {
+                              return buildTextFormField(
+                                onTap: () {
+                                  if (controller.isOpen) {
+                                    controller.close();
+                                  } else {
+                                    controller.open();
+                                  }
+                                },
+                                readOnly: true,
+                                controller: _activitePrincipaleController,
+                                labelText: "activité principal",
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return "Veuillez Selectionner une activité principale";
+                                  }
+                                  return null;
+                                },
+                                onSaved: (value) {
+                                  _activitePrincipaleId = selectedMenu!.id!;
+                                },
+                              );
+                            },
+                            menuChildren: List.generate(
+                              activites.length,
+                              (int index) => SizedBox(
+                                width: 200,
+                                child: Center(
+                                  child: MenuItemButton(
+                                    onPressed: () => setState(() {
+                                      selectedMenu = activites[index];
+                                      _activitePrincipaleController.text =
+                                          selectedMenu?.nom ?? '';
+                                    }),
+                                    child: Text(activites[index].nom),
                                   ),
                                 ),
                               ),
-                            );
-                          }),
-                      // TextFormField(
-                      //   decoration: const InputDecoration(
-                      //       labelText: "ID de l'activité principal"),
-                      //   keyboardType: TextInputType.number,
-                      //   validator: (value) {
-                      //     if (value == null || value.isEmpty) {
-                      //       return "Veuillez saisir l'ID de l'activité principale";
-                      //     }
-                      //     return null;
-                      //   },
-                      //   onSaved: (value) {
-                      //     _activitePrincipaleId = int.parse(value!);
-                      //   },
-                      // ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        decoration: const InputDecoration(labelText: 'Adresse'),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Veuillez saisir l'adresse du contribuable";
-                          }
-                          return null;
-                        },
-                        onSaved: (value) {
-                          _adresse = value!;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        decoration: const InputDecoration(labelText: 'Email'),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Veuillez saisir l'email du contribuable";
-                          }
-                          return null;
-                        },
-                        onSaved: (value) {
-                          _email = value!;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        decoration: const InputDecoration(labelText: 'Contact'),
-                        keyboardType: TextInputType.number,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Veuillez saisir le contact du contribuable';
-                          }
-                          return null;
-                        },
-                        onSaved: (value) {
-                          _contact = int.parse(value!);
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        decoration: const InputDecoration(
-                            labelText: 'Type de contribuable'),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Veuillez saisir le type de contribuable';
-                          }
-                          return null;
-                        },
-                        onSaved: (value) {
-                          _typeContribuable = value!;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        decoration:
-                            const InputDecoration(labelText: 'Valeur locative'),
-                        keyboardType: TextInputType.number,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Veuillez saisir la valeur locative du contribuable';
-                          }
-                          return null;
-                        },
-                        onSaved: (value) {
-                          _valeurLocative = int.parse(value!);
-                        },
-                      ),
-                      const SizedBox(height: 32),
-                    ],
-                  ),
+                            ),
+                          );
+                        }),
+                    // TextFormField(
+                    //   decoration: const InputDecoration(
+                    //       labelText: "ID de l'activité principal"),
+                    //   keyboardType: TextInputType.number,
+                    //   validator: (value) {
+                    //     if (value == null || value.isEmpty) {
+                    //       return "Veuillez saisir l'ID de l'activité principale";
+                    //     }
+                    //     return null;
+                    //   },
+                    //   onSaved: (value) {
+                    //     _activitePrincipaleId = int.parse(value!);
+                    //   },
+                    // ),
+                    buildTextFormField(
+                      labelText: 'Adresse',
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Veuillez saisir l'adresse du contribuable";
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        _adresse = value!;
+                      },
+                    ),
+                    buildTextFormField(
+                      labelText: 'Email',
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Veuillez saisir l'email du contribuable";
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        _email = value!;
+                      },
+                    ),
+                    buildTextFormField(
+                      labelText: 'Contact',
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Veuillez saisir le contact du contribuable';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        _contact = int.parse(value!);
+                      },
+                    ),
+                    buildTextFormField(
+                      labelText: 'Type de contribuable',
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Veuillez saisir le type de contribuable';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        _typeContribuable = value!;
+                      },
+                    ),
+                    buildTextFormField(
+                      labelText: 'Valeur locative',
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Veuillez saisir la valeur locative du contribuable';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        _valeurLocative = int.parse(value!);
+                      },
+                    ),
+                    buildTextFormField(
+                      labelText: 'Nombre d\'employés',
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Veuillez saisir la Nombre d\'employé ';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        _nbreEmployes = int.parse(value!);
+                      },
+                    ),
+                    FutureBuilder(
+                        future: getAgents(),
+                        builder: (context, snapshot) {
+                          return MenuAnchor(
+                            builder: (BuildContext context,
+                                MenuController controller, Widget? child) {
+                              return buildTextFormField(
+                                onTap: () {
+                                  if (controller.isOpen) {
+                                    controller.close();
+                                  } else {
+                                    controller.open();
+                                  }
+                                },
+                                readOnly: true,
+                                controller: _agentFormController,
+                                labelText: "Agent chargé du suivi",
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return "Veuillez Selectionner un agent";
+                                  }
+                                  return null;
+                                },
+                                onSaved: (value) {
+                                  _agentId = selectedMenuAgent!.id!;
+                                },
+                              );
+                            },
+                            menuChildren: List.generate(
+                              agents.length,
+                              (int index) => SizedBox(
+                                width: 200,
+                                child: Center(
+                                  child: MenuItemButton(
+                                    onPressed: () => setState(() {
+                                      selectedMenuAgent = agents[index];
+                                      _agentFormController.text =
+                                          selectedMenuAgent?.nom ?? '';
+                                    }),
+                                    child: Text(agents[index].nom),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                  ],
                 ),
               ),
               ElevatedButton(
@@ -360,22 +387,27 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
                   if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
                     // Appel de la fonction pour enregistrer le contribuable en utilisant Web3dart
-                    await widget.onAjouterContribuable(Contribuable(
-                        ethAddress: EthereumAddress.fromHex(_ethAdress),
-                        nif: _nif,
-                        denomination: _denomination,
-                        activitePrincipaleId: _activitePrincipaleId,
-                        nom: _name,
-                        prenom: _prenom,
-                        adresse: _adresse,
-                        email: _email,
-                        contact: _contact,
-                        valeurLocative: _valeurLocative,
-                        typeContribuable: _typeContribuable,
-                        dateCreation: DateTime.now().toLocal().toString(),
-                        nombreEmployes: _nbreEmployes,
-                        anneeModification: DateTime.now().toString(),
-                        agentId: _agentId));
+                    await _patenteManagement.ajouterContribuable(
+                        Contribuable(
+                          ethAddress: EthereumAddress.fromHex(_ethAdress),
+                          nif: _nif,
+                          denomination: _denomination,
+                          activitePrincipaleId: _activitePrincipaleId,
+                          nom: _name,
+                          prenom: _prenom,
+                          adresse: _adresse,
+                          email: _email,
+                          contact: _contact,
+                          typeContribuable: _typeContribuable,
+                          dateCreation: DateTime.now().toLocal().toString(),
+                          valeurLocative: _valeurLocative,
+                          nombreEmployes: _nbreEmployes,
+                          anneeModification:
+                              DateTime.now().toLocal().toString(),
+                          agentId: _agentId,
+                        ),
+                        EthereumAddress.fromHex(
+                            "0xC232db3AE5eeaaf67a31cdbA2b448fA323FDABF7"));
                   }
 
                   Navigator.of(context).pop();
@@ -386,6 +418,25 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget buildTextFormField(
+      {required String labelText,
+      required Function(String?) onSaved,
+      required String? Function(String?)? validator,
+      bool readOnly = false,
+      TextEditingController? controller,
+      Function()? onTap,
+      TextInputType? keyboardType}) {
+    return TextFormField(
+      decoration: InputDecoration(labelText: labelText),
+      validator: validator,
+      onSaved: onSaved,
+      readOnly: readOnly,
+      controller: controller,
+      onTap: onTap,
+      keyboardType: keyboardType,
     );
   }
 
@@ -449,9 +500,48 @@ class _ContribuableListState extends State<ContribuableList> {
     _contribuablesFuture = widget.contribuableListFuture;
   }
 
+  Future<void> _ajouterContribuable(Contribuable contribuable) async {
+    await _patenteManagement.ajouterContribuable(contribuable,
+        EthereumAddress.fromHex("0xC232db3AE5eeaaf67a31cdbA2b448fA323FDABF7"));
+
+    CollectionReference usersRef =
+        FirebaseFirestore.instance.collection('users');
+
+    await usersRef.add({
+      "email": contribuable.email,
+      "adresseEth": contribuable.ethAddress.hexEip55
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.add_business_sharp),
+          onPressed: () {
+            showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                      title: Text('Ajouter un nouveau contributable'),
+                      content: Container(
+                        width: MediaQuery.of(context).size.width * 0.8,
+                        height: MediaQuery.of(context).size.height * 0.8,
+                        child: RegisterContribuableForm(),
+                      ));
+                }).then((value) {
+              Future<List<Contribuable>> updateContribuables() async {
+                _contribuables =
+                    await _patenteManagement.getContribuableAjouteEvents();
+                return _contribuables;
+              }
+
+              setState(() {
+                _contribuablesFuture = updateContribuables();
+              });
+              return null;
+            });
+          }),
       appBar: AppBar(
         title: Center(
           child: Text("Liste de contribuables "),
@@ -459,123 +549,118 @@ class _ContribuableListState extends State<ContribuableList> {
       ),
       body: Column(
         children: [
-          FutureBuilder(
-              future: _contribuablesFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(
-                      child: Text('Erreur de chargement des agents.'));
-                } else if (snapshot.hasData && snapshot.data!.isEmpty) {
-                  return Center(child: Text('Aucun agent enregistré.'));
-                } else {
-                  _contribuables = snapshot.data!;
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Card(
-                        child: SingleChildScrollView(
-                          child: DataTable(
-                            columns: [
-                              const DataColumn(label: Text('Nom')),
-                              const DataColumn(label: Text('Prénom')),
-                              const DataColumn(label: Text('Dénomination')),
-                              const DataColumn(label: Text('Adresse')),
-                              const DataColumn(label: Text('Type')),
-                              const DataColumn(label: Text('Actions')),
-                            ],
-                            rows: _contribuables.map((contribuable) {
-                              return DataRow(cells: [
-                                DataCell(Text(contribuable.nom)),
-                                DataCell(Text(contribuable.prenom)),
-                                DataCell(Text(contribuable.denomination)),
-                                DataCell(Text(contribuable.adresse)),
-                                DataCell(Text(contribuable.typeContribuable)),
-                                DataCell(Row(
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit),
-                                      onPressed: () {
-                                      },
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete),
-                                      onPressed: () async {
-                                        // Supprimer le Contribuable
+          Expanded(
+            child: FutureBuilder(
+                future: _contribuablesFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(
+                        child: Text('Erreur de chargement des agents.'));
+                  } else if (snapshot.hasData && snapshot.data!.isEmpty) {
+                    return Center(child: Text('Aucun agent enregistré.'));
+                  } else {
+                    _contribuables = snapshot.data!;
+                    return Card(
+                      child: SingleChildScrollView(
+                        child: DataTable(
+                          columns: [
+                            const DataColumn(label: Text('Nom')),
+                            const DataColumn(label: Text('Prénom')),
+                            const DataColumn(label: Text('Dénomination')),
+                            const DataColumn(label: Text('Adresse')),
+                            const DataColumn(label: Text('Type')),
+                            const DataColumn(label: Text('Actions')),
+                          ],
+                          rows: _contribuables.map((contribuable) {
+                            return DataRow(cells: [
+                              DataCell(Text(contribuable.nom)),
+                              DataCell(Text(contribuable.prenom)),
+                              DataCell(Text(contribuable.denomination)),
+                              DataCell(Text(contribuable.adresse)),
+                              DataCell(Text(contribuable.typeContribuable)),
+                              DataCell(Row(
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit),
+                                    onPressed: () {},
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete),
+                                    onPressed: () async {
+                                      // Supprimer le Contribuable
 
-                                        showDialog(
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return AlertDialog(
-                                                  title:
-                                                      new Text("Confirmation"),
-                                                  content: new Text(
-                                                      "Voulez-vous supprimer ce contribuable?"),
-                                                  actions: <Widget>[
-                                                    TextButton(
-                                                      child: new Text("Annuler",
-                                                          style: TextStyle(
-                                                              color: Colors
-                                                                  .redAccent)),
-                                                      onPressed: () {
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      },
-                                                    ),
-                                                    ElevatedButton(
-                                                      child: Text(
-                                                        "Oui",
+                                      showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return AlertDialog(
+                                                title: new Text("Confirmation"),
+                                                content: new Text(
+                                                    "Voulez-vous supprimer ce contribuable?"),
+                                                actions: <Widget>[
+                                                  TextButton(
+                                                    child: new Text("Annuler",
                                                         style: TextStyle(
                                                             color: Colors
-                                                                .redAccent),
-                                                      ),
-                                                      onPressed: () async {
-                                                        showLoadingDialog();
-                                                        await _patenteManagement
-                                                            .supprimerContribuable(
-                                                                contribuable
-                                                                    .ethAddress,
-                                                                EthereumAddress
-                                                                    .fromHex(
-                                                                        "0xC232db3AE5eeaaf67a31cdbA2b448fA323FDABF7"));
+                                                                .redAccent)),
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    },
+                                                  ),
+                                                  ElevatedButton(
+                                                    child: Text(
+                                                      "Oui",
+                                                      style: TextStyle(
+                                                          color:
+                                                              Colors.redAccent),
+                                                    ),
+                                                    onPressed: () async {
+                                                      showLoadingDialog();
+                                                      await _patenteManagement
+                                                          .supprimerContribuable(
+                                                              contribuable
+                                                                  .ethAddress,
+                                                              EthereumAddress
+                                                                  .fromHex(
+                                                                      "0xC232db3AE5eeaaf67a31cdbA2b448fA323FDABF7"));
 
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      },
-                                                    )
-                                                  ]);
-                                            }).then((value) {
-                                          Future<List<Contribuable>>
-                                              refreshContribuables() async {
-                                            _contribuables =
-                                                await _patenteManagement
-                                                    .getContribuableAjouteEvents();
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    },
+                                                  )
+                                                ]);
+                                          }).then((value) {
+                                        Future<List<Contribuable>>
+                                            refreshContribuables() async {
+                                          _contribuables =
+                                              await _patenteManagement
+                                                  .getContribuableAjouteEvents();
 
-                                            return _contribuables;
-                                          }
+                                          return _contribuables;
+                                        }
 
-                                          setState(() {
-                                            _contribuablesFuture =
-                                                refreshContribuables();
-                                          });
-                                          return null;
+                                        setState(() {
+                                          _contribuablesFuture =
+                                              refreshContribuables();
                                         });
-                                      },
-                                    ),
-                                  ],
-                                )),
-                              ]);
-                            }).toList(),
-                          ),
+                                        return null;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              )),
+                            ]);
+                          }).toList(),
                         ),
                       ),
-                    ],
-                  );
-                }
-              }),
+                    );
+                  }
+                }),
+          ),
         ],
       ),
     );

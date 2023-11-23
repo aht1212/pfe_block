@@ -197,7 +197,7 @@ contract TaxManagement {
     }
 
     
-    function ajouterContribuable(address  _ethAddress, string memory _nif,string memory _denomination,uint  _activitePrincipaleId,   string memory _nom, string memory _prenom, string memory _adresse, string memory _email, uint _contact, string memory _typeContribuable, string memory _dateCreation, uint  _valeurLocative,uint _nombreEmployee, string memory _anneeModification,uint _agentId ) public seulementAdmin {
+    function ajouterContribuable(address  _ethAddress, string memory _nif,string memory _denomination,uint  _activitePrincipaleId,   string memory _nom, string memory _prenom, string memory _adresse, string memory _email, uint _contact, string memory _typeContribuable, string memory _dateCreation, uint  _valeurLocative,uint _nombreEmployee, string memory _anneeModification,uint _agentId) public seulementAdmin {
         require(!estContribuable[_ethAddress], "Ce contribuable est deja enregistre.");
         
         Contribuable memory nouveauContribuable = Contribuable({
@@ -216,7 +216,7 @@ contract TaxManagement {
             anneeModification: _anneeModification,
             agentId : _agentId, 
             typeContribuable : _typeContribuable, 
-            dateCreation : _dateCreation,  
+            dateCreation : _dateCreation,
             estEnregistre: true
         });
         estContribuable[_ethAddress] = true;

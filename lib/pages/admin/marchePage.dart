@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pfe_block/services/tax_management_service.dart';
 import 'package:web3dart/web3dart.dart';
 
 class MarchesScreen extends StatefulWidget {
@@ -7,48 +8,32 @@ class MarchesScreen extends StatefulWidget {
 }
 
 class _MarchesScreenState extends State<MarchesScreen> {
-  List<Marche> markets = [
-    Marche(
-      id: 1,
-      nom: 'Market 1',
-      nombrePlaces: 50,
-      prixPlace: 10,
-      placesOccupees: 20,
-    ),
-    Marche(
-      id: 2,
-      nom: 'Market 2',
-      nombrePlaces: 30,
-      prixPlace: 15,
-      placesOccupees: 10,
-    ),
-    Marche(
-      id: 3,
-      nom: 'Market 3',
-      nombrePlaces: 40,
-      prixPlace: 12,
-      placesOccupees: 30,
-    ),
-  ];
+  List<Marche> _marches = [];
 
-  List<Marche> filteredMarkets = [];
-
+  List<Marche> filteredMarches = [];
+  late Future<List<Marche>> _futureMarche;
+  PatenteManagement _patenteManagement = PatenteManagement();
   String searchQuery = '';
-  bool showOnlyOccupiedMarkets = false;
+  bool showOnlyOccupiedMarches = false;
+  Future<List<Marche>> getMarches() async {
+    _marches = await _patenteManagement.getMarcheAjouteEvents();
+    return _marches;
+  }
 
   @override
   void initState() {
     super.initState();
-    filteredMarkets = markets;
+    _futureMarche = getMarches();
+    filteredMarches = _marches;
   }
 
-  void filterMarkets() {
+  void filterMarches() {
     setState(() {
-      filteredMarkets = markets.where((market) {
+      filteredMarches = _marches.where((market) {
         final lowerCaseQuery = searchQuery.toLowerCase();
         final lowerCaseNom = market.nom.toLowerCase();
         return lowerCaseNom.contains(lowerCaseQuery) &&
-            (!showOnlyOccupiedMarkets || market.placesOccupees > 0);
+            (!showOnlyOccupiedMarches || market.placesOccupees > 0);
       }).toList();
     });
   }
@@ -70,7 +55,7 @@ class _MarchesScreenState extends State<MarchesScreen> {
               onChanged: (value) {
                 setState(() {
                   searchQuery = value;
-                  filterMarkets();
+                  filterMarches();
                 });
               },
             ),
@@ -78,136 +63,146 @@ class _MarchesScreenState extends State<MarchesScreen> {
           ListTile(
             title: Text('Afficher uniquement les marchés occupés'),
             trailing: Switch(
-              value: showOnlyOccupiedMarkets,
+              value: showOnlyOccupiedMarches,
               onChanged: (value) {
                 setState(() {
-                  showOnlyOccupiedMarkets = value;
-                  filterMarkets();
+                  showOnlyOccupiedMarches = value;
+                  filterMarches();
                 });
               },
             ),
           ),
           Expanded(
-            child: ListView.separated(
-              itemCount: filteredMarkets.length,
-              separatorBuilder: (context, index) => Divider(),
-              itemBuilder: (context, index) {
-                return ListTile(
-                  leading: Icon(Icons.shopping_cart),
-                  title: Text(filteredMarkets[index].nom),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                          'Nombre de places: ${filteredMarkets[index].nombrePlaces}'),
-                      Text(
-                          'Prix par place: ${filteredMarkets[index].prixPlace}'),
-                      Text(
-                          'Places occupées: ${filteredMarkets[index].placesOccupees}'),
-                    ],
-                  ),
-                  trailing: IconButton(
-                    icon: Icon(Icons.edit),
-                    onPressed: () {
-                      // Action when edit button is pressed
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: Text('Modifier le marché'),
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                TextField(
-                                  decoration: InputDecoration(
-                                    labelText: 'Nom du marché',
-                                  ),
-                                  onChanged: (value) {
-                                    // Update market name
-                                    setState(() {
-                                      filteredMarkets[index].nom = value;
-                                    });
-                                  },
-                                ),
-                                TextField(
-                                  decoration: InputDecoration(
-                                    labelText: 'Nombre de places',
-                                  ),
-                                  onChanged: (value) {
-                                    // Update number of places
-                                    setState(() {
-                                      filteredMarkets[index].nombrePlaces =
-                                          int.parse(value);
-                                    });
-                                  },
-                                ),
-                                TextField(
-                                  decoration: InputDecoration(
-                                    labelText: 'Prix par place',
-                                  ),
-                                  onChanged: (value) {
-                                    // Update price per place
-                                    setState(() {
-                                      filteredMarkets[index].prixPlace =
-                                          int.parse(value);
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
-                            actions: [
-                              TextButton(
-                                child: Text('Annuler'),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                              ),
-                              TextButton(
-                                child: Text('Enregistrer'),
-                                onPressed: () {
-                                  // Save market changes
-                                  Navigator.of(context).pop();
-                                },
-                              ),
+            child: FutureBuilder(
+                future: _futureMarche,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return ListView.separated(
+                      itemCount: filteredMarches.length,
+                      separatorBuilder: (context, index) => Divider(),
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          leading: Icon(Icons.shopping_cart),
+                          title: Text(filteredMarches[index].nom),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                  'Nombre de places: ${filteredMarches[index].nombrePlaces}'),
+                              Text(
+                                  'Prix par place: ${filteredMarches[index].prixPlace}'),
+                              Text(
+                                  'Places occupées: ${filteredMarches[index].placesOccupees}'),
                             ],
-                          );
-                        },
-                      );
-                    },
-                  ),
-                  onLongPress: () {
-                    // Action when market is long pressed (e.g. delete)
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: Text('Supprimer le marché'),
-                          content: Text(
-                              'Êtes-vous sûr de vouloir supprimer ce marché ?'),
-                          actions: [
-                            TextButton(
-                              child: Text('Annuler'),
-                              onPressed: () {
-                                Navigator.of(context).pop();
+                          ),
+                          trailing: IconButton(
+                            icon: Icon(Icons.edit),
+                            onPressed: () {
+                              // Action when edit button is pressed
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text('Modifier le marché'),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        TextField(
+                                          decoration: InputDecoration(
+                                            labelText: 'Nom du marché',
+                                          ),
+                                          onChanged: (value) {
+                                            // Update market name
+                                            setState(() {
+                                              filteredMarches[index].nom =
+                                                  value;
+                                            });
+                                          },
+                                        ),
+                                        TextField(
+                                          decoration: InputDecoration(
+                                            labelText: 'Nombre de places',
+                                          ),
+                                          onChanged: (value) {
+                                            // Update number of places
+                                            setState(() {
+                                              filteredMarches[index]
+                                                      .nombrePlaces =
+                                                  int.parse(value);
+                                            });
+                                          },
+                                        ),
+                                        TextField(
+                                          decoration: InputDecoration(
+                                            labelText: 'Prix par place',
+                                          ),
+                                          onChanged: (value) {
+                                            // Update price per place
+                                            setState(() {
+                                              filteredMarches[index].prixPlace =
+                                                  int.parse(value);
+                                            });
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        child: Text('Annuler'),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                      ),
+                                      TextButton(
+                                        child: Text('Enregistrer'),
+                                        onPressed: () {
+                                          // Save market changes
+                                          Navigator.of(context).pop();
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                          onLongPress: () {
+                            // Action when market is long pressed (e.g. delete)
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: Text('Supprimer le marché'),
+                                  content: Text(
+                                      'Êtes-vous sûr de vouloir supprimer ce marché ?'),
+                                  actions: [
+                                    TextButton(
+                                      child: Text('Annuler'),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                    TextButton(
+                                      child: Text('Supprimer'),
+                                      onPressed: () {
+                                        setState(() {
+                                          filteredMarches.removeAt(index);
+                                        });
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                  ],
+                                );
                               },
-                            ),
-                            TextButton(
-                              child: Text('Supprimer'),
-                              onPressed: () {
-                                setState(() {
-                                  filteredMarkets.removeAt(index);
-                                });
-                                Navigator.of(context).pop();
-                              },
-                            ),
-                          ],
+                            );
+                          },
                         );
                       },
                     );
-                  },
-                );
-              },
-            ),
+                  } else {
+                    return CircularProgressIndicator.adaptive();
+                  }
+                }),
           ),
         ],
       ),
@@ -264,14 +259,14 @@ class _MarchesScreenState extends State<MarchesScreen> {
                     child: Text('Ajouter'),
                     onPressed: () {
                       setState(() {
-                        markets.add(Marche(
-                          id: markets.length + 1,
+                        _marches.add(Marche(
+                          id: _marches.length + 1,
                           nom: newMarketName,
                           nombrePlaces: newMarketNombrePlaces,
                           prixPlace: newMarketPrixPlace,
                           placesOccupees: 0,
                         ));
-                        filterMarkets();
+                        filterMarches();
                       });
                       Navigator.of(context).pop();
                     },

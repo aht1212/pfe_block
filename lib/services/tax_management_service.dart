@@ -14,7 +14,8 @@ import 'package:web3dart/web3dart.dart';
 import 'package:web_socket_channel/io.dart';
 
 import '../model/agent_model.dart';
-import '../model/typeCommerce_model.dart';
+import '../model/demandeOccupation_model.dart';
+import '../model/demandeOccupation_model.dart';
 
 class PatenteManagement {
   final String rpcUrl = defaultTargetPlatform == TargetPlatform.android
@@ -131,51 +132,155 @@ class PatenteManagement {
     return contribuables;
   }
 
+//liste des marchés
   Future<List<Marche>> getMarcheAjouteEvents() async {
     isLoading = true;
-
-    final marcheAjouteEvent = _contract!.events[1];
-    final filter = FilterOptions.events(
-      contract: _contract!,
-      event: marcheAjouteEvent,
-      fromBlock: BlockNum.genesis(),
-      toBlock: BlockNum.current(),
-    );
-    final logs = await _web3client!.getLogs(filter);
+    await setup();
+    final marcheFunction = _contract!.function("getMarches");
+    BigInt cId = await _web3client!.getChainId();
 
     List<Marche> marches = [];
-    for (var log in logs) {
-      final decoded = marcheAjouteEvent.decodeResults(log.topics!, log.data!);
-      Marche marche = Marche.fromEvent(decoded);
-      marches.add(marche);
-      print(marche.toString());
-    }
+    Credentials credential = EthPrivateKey.fromHex(privateKey);
+    List contractCall = await _web3client!.call(
+        contract: _contract!,
+        function: marcheFunction,
+        params: [],
+        atBlock: BlockNum.current());
+    List<dynamic> marchesCall = contractCall[0];
+    for (var element in marchesCall) {
+      Marche a = Marche.fromEvent(element);
 
+      marches.add(a);
+    }
+    // marches = contractCall.map((e) => null)
     return marches;
   }
 
-  Future<List<TypeCommerce>> getTypeCommerceAjouteEvents() async {
+//ajouter demandeoccupation
+  Future<void> ajouterDemandeOccupation(DemandeOccupation demandeoccupation,
+      EthereumAddress addressExpediteur) async {
     isLoading = true;
 
-    final typeCommerceAjouteEvent = _contract!.events[3];
+    var result = _contract!.function("creerDemandeOccupation");
+    BigInt cId = await _web3client!.getChainId();
+    String privateKey = "";
+
+    ethereumAccounts.forEach((key, value) {
+      if (key == addressExpediteur.hexEip55) {
+        privateKey = value;
+      }
+    });
+    Credentials credential = EthPrivateKey.fromHex(privateKey);
+    await _web3client!
+        .sendTransaction(
+            credential,
+            Transaction.callContract(
+                contract: _contract!,
+                function: result,
+                parameters: [
+                  demandeoccupation.idContribuable,
+                  demandeoccupation.idMarche,
+                  demandeoccupation.dateDebut,
+                  demandeoccupation.dateFin,
+                ],
+                from: addressExpediteur),
+            chainId: cId.toInt())
+        .then((value) async {
+      print(value.toString());
+
+      // final adresseEth = querySnapshot.docs.first['adresseEth'];
+
+      isLoading = false;
+      return null;
+    });
+    await setup();
+  }
+
+  Future<void> validerDemandeOccupation(DemandeOccupation demandeoccupation,
+      EthereumAddress addressExpediteur) async {
+    isLoading = true;
+
+    var result = _contract!.function("validerDemandeOccupation");
+    BigInt cId = await _web3client!.getChainId();
+    String privateKey = "";
+
+    ethereumAccounts.forEach((key, value) {
+      if (key == addressExpediteur.hexEip55) {
+        privateKey = value;
+      }
+    });
+    Credentials credential = EthPrivateKey.fromHex(privateKey);
+    await _web3client!
+        .sendTransaction(
+            credential,
+            Transaction.callContract(
+                contract: _contract!,
+                function: result,
+                parameters: [
+                  demandeoccupation.idoccupation,
+                ],
+                from: addressExpediteur),
+            chainId: cId.toInt())
+        .then((value) async {
+      print(value.toString());
+
+      // final adresseEth = querySnapshot.docs.first['adresseEth'];
+
+      isLoading = false;
+      return null;
+    });
+    await setup();
+  }
+
+  Future<List<DemandeOccupation>> getDemandeOccupationAjouteEvents() async {
+    isLoading = true;
+
+    final demandeoccupationAjouteEvent = _contract!.events[0];
     final filter = FilterOptions.events(
       contract: _contract!,
-      event: typeCommerceAjouteEvent,
+      event: demandeoccupationAjouteEvent,
       fromBlock: BlockNum.genesis(),
       toBlock: BlockNum.current(),
     );
     final logs = await _web3client!.getLogs(filter);
 
-    List<TypeCommerce> typeCommerces = [];
+    List<DemandeOccupation> demandeoccupations = [];
     for (var log in logs) {
       final decoded =
-          typeCommerceAjouteEvent.decodeResults(log.topics!, log.data!);
-      TypeCommerce typeCommerce = TypeCommerce.fromEvent(decoded);
-      typeCommerces.add(typeCommerce);
-      typeCommerce.toJson();
+          demandeoccupationAjouteEvent.decodeResults(log.topics!, log.data!);
+      DemandeOccupation demandeoccupation =
+          DemandeOccupation.fromContract(decoded);
+      demandeoccupations.add(demandeoccupation);
+      print(demandeoccupation.toString());
     }
 
-    return typeCommerces;
+    return demandeoccupations;
+  }
+
+  Future<List<DemandeOccupationValidee>>
+      getDemandeOccupationValideeEvents() async {
+    isLoading = true;
+
+    final demandeOccupationAjouteEvent = _contract!.events[1];
+    final filter = FilterOptions.events(
+      contract: _contract!,
+      event: demandeOccupationAjouteEvent,
+      fromBlock: BlockNum.genesis(),
+      toBlock: BlockNum.current(),
+    );
+    final logs = await _web3client!.getLogs(filter);
+
+    List<DemandeOccupationValidee> demandeOccupations = [];
+    for (var log in logs) {
+      final decoded =
+          demandeOccupationAjouteEvent.decodeResults(log.topics!, log.data!);
+      DemandeOccupationValidee demandeOccupation =
+          DemandeOccupationValidee.fromEvent(decoded);
+      demandeOccupations.add(demandeOccupation);
+      print(demandeOccupation.toString());
+    }
+
+    return demandeOccupations;
   }
 
   Future<List<Activite>> getActivites() async {
@@ -196,7 +301,7 @@ class PatenteManagement {
     for (var element in contractCall[0]) {
       Activite activite = Activite.fromEvent(element);
 
-      if (activite.droitFixeAnnuel != 0 && activite.id != 0) {
+      if (activite.droitFixeAnnuel != 0 && activite.nom != "") {
         activites.add(activite);
       }
     }
@@ -366,7 +471,7 @@ class PatenteManagement {
                   BigInt.from(contribuable.valeurLocative),
                   BigInt.from(contribuable.nombreEmployes),
                   contribuable.anneeModification,
-                  contribuable.agentId
+                  BigInt.from(contribuable.agentId)
                 ],
                 from: addressExpediteur),
             chainId: cId.toInt())
@@ -409,45 +514,45 @@ class PatenteManagement {
     });
   }
 
-// Ajouter un type de commerce
-  Future<void> ajouterTypeCommerce(
-      TypeCommerce typeCommerce, EthereumAddress addressExpediteur) async {
-    isLoading = true;
+// // Ajouter un type de commerce
+//   Future<void> ajouterDemandeOccupation(
+//       DemandeOccupation demandeOccupation, EthereumAddress addressExpediteur) async {
+//     isLoading = true;
 
-    var result = _contract!.function("ajouterTypeCommerce");
-    BigInt cId = await _web3client!.getChainId();
-    String privateKey = "";
-    ethereumAccounts.forEach((key, value) {
-      if (key == addressExpediteur.hexEip55) {
-        privateKey = value;
-      }
-    });
-    Credentials credential = EthPrivateKey.fromHex(privateKey);
-    _web3client!
-        .sendTransaction(
-            credential,
-            Transaction.callContract(
-                contract: _contract!,
-                function: result,
-                parameters: [
-                  typeCommerce.nom,
-                  BigInt.from(typeCommerce.tarifAnnuel),
-                  typeCommerce.description
-                ],
-                from: addressExpediteur),
-            chainId: cId.toInt())
-        .then((value) {
-      print(value.toString());
-      return null;
-    });
-  }
+//     var result = _contract!.function("ajouterDemandeOccupation");
+//     BigInt cId = await _web3client!.getChainId();
+//     String privateKey = "";
+//     ethereumAccounts.forEach((key, value) {
+//       if (key == addressExpediteur.hexEip55) {
+//         privateKey = value;
+//       }
+//     });
+//     Credentials credential = EthPrivateKey.fromHex(privateKey);
+//     _web3client!
+//         .sendTransaction(
+//             credential,
+//             Transaction.callContract(
+//                 contract: _contract!,
+//                 function: result,
+//                 parameters: [
+//                   demandeOccupation.nom,
+//                   BigInt.from(demandeOccupation.tarifAnnuel),
+//                   demandeOccupation.description
+//                 ],
+//                 from: addressExpediteur),
+//             chainId: cId.toInt())
+//         .then((value) {
+//       print(value.toString());
+//       return null;
+//     });
+//   }
 
 // Supprimer un type de commerce
-  Future<void> supprimerTypeCommerce(
-      int idTypeCommerce, EthereumAddress addressExpediteur) async {
+  Future<void> supprimerDemandeOccupation(
+      int idDemandeOccupation, EthereumAddress addressExpediteur) async {
     isLoading = true;
 
-    var result = _contract!.function("supprimerTypeCommerce");
+    var result = _contract!.function("supprimerDemandeOccupation");
     BigInt cId = await _web3client!.getChainId();
     String privateKey = "";
     ethereumAccounts.forEach((key, value) {
@@ -462,7 +567,7 @@ class PatenteManagement {
             Transaction.callContract(
                 contract: _contract!,
                 function: result,
-                parameters: [BigInt.from(idTypeCommerce)],
+                parameters: [BigInt.from(idDemandeOccupation)],
                 from: addressExpediteur),
             chainId: cId.toInt())
         .then((value) {

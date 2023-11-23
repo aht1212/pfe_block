@@ -83,7 +83,7 @@ class LineChartCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "Steps Overview",
+            "Revenus au fil temps ",
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
           ),
           const SizedBox(
