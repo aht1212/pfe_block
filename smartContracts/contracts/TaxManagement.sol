@@ -451,15 +451,17 @@ return patenteList;
 }
  
     function ajouterMarche(string memory _nom, uint _nombrePlaces, uint _prixPlace) public seulementAdmin {
-        marcheCount++;
         
-        Marche storage nouveauMarche = marches[marcheCount];
-        nouveauMarche.id = marcheCount;
-        nouveauMarche.nom = _nom;
-        nouveauMarche.nombrePlaces = _nombrePlaces;
-        nouveauMarche.prixPlace = _prixPlace;
-        nouveauMarche.placesOccupees = 0;  
-       
+        Marche storage nouveauMarche = marches({
+        id = marcheCount;
+        nom = _nom;
+        nombrePlaces = _nombrePlaces;
+        prixPlace = _prixPlace;
+        placesOccupees = 0;  
+        });
+        marches[marcheCount] = nouveauMarche; 
+               marcheCount++;
+
     }
     
     function getMarches() public view returns (Marche[] memory) {
@@ -469,7 +471,7 @@ return patenteList;
    
       marchesList[counter] = marches[id];
       counter++;
-    
+
       }
       return marchesList;
 }

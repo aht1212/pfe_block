@@ -78,21 +78,21 @@ class _MarchesScreenState extends State<MarchesScreen> {
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     return ListView.separated(
-                      itemCount: filteredMarches.length,
+                      itemCount: _marches.length,
                       separatorBuilder: (context, index) => Divider(),
                       itemBuilder: (context, index) {
                         return ListTile(
                           leading: Icon(Icons.shopping_cart),
-                          title: Text(filteredMarches[index].nom),
+                          title: Text(_marches[index].nom),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                  'Nombre de places: ${filteredMarches[index].nombrePlaces}'),
+                                  'Nombre de places: ${_marches[index].nombrePlaces}'),
                               Text(
-                                  'Prix par place: ${filteredMarches[index].prixPlace}'),
+                                  'Prix par place: ${_marches[index].prixPlace}'),
                               Text(
-                                  'Places occupées: ${filteredMarches[index].placesOccupees}'),
+                                  'Places occupées: ${_marches[index].placesOccupees}'),
                             ],
                           ),
                           trailing: IconButton(
