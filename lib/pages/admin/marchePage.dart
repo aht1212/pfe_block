@@ -33,7 +33,7 @@ class _MarchesScreenState extends State<MarchesScreen> {
         final lowerCaseQuery = searchQuery.toLowerCase();
         final lowerCaseNom = market.nom.toLowerCase();
         return lowerCaseNom.contains(lowerCaseQuery) &&
-            (!showOnlyOccupiedMarches || market.placesOccupees > 0);
+            (!showOnlyOccupiedMarches || market.placesOccupees! > 0);
       }).toList();
     });
   }
@@ -105,44 +105,56 @@ class _MarchesScreenState extends State<MarchesScreen> {
                                   return AlertDialog(
                                     title: Text('Modifier le marché'),
                                     content: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        TextField(
-                                          decoration: InputDecoration(
-                                            labelText: 'Nom du marché',
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: TextField(
+                                            decoration: InputDecoration(
+                                              labelText: 'Nom du marché',
+                                            ),
+                                            onChanged: (value) {
+                                              // Update market name
+                                              setState(() {
+                                                filteredMarches[index].nom =
+                                                    value;
+                                              });
+                                            },
                                           ),
-                                          onChanged: (value) {
-                                            // Update market name
-                                            setState(() {
-                                              filteredMarches[index].nom =
-                                                  value;
-                                            });
-                                          },
                                         ),
-                                        TextField(
-                                          decoration: InputDecoration(
-                                            labelText: 'Nombre de places',
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: TextField(
+                                            decoration: InputDecoration(
+                                              labelText: 'Nombre de places',
+                                            ),
+                                            onChanged: (value) {
+                                              // Update number of places
+                                              setState(() {
+                                                filteredMarches[index]
+                                                        .nombrePlaces =
+                                                    int.parse(value);
+                                              });
+                                            },
                                           ),
-                                          onChanged: (value) {
-                                            // Update number of places
-                                            setState(() {
-                                              filteredMarches[index]
-                                                      .nombrePlaces =
-                                                  int.parse(value);
-                                            });
-                                          },
                                         ),
-                                        TextField(
-                                          decoration: InputDecoration(
-                                            labelText: 'Prix par place',
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: TextField(
+                                            decoration: InputDecoration(
+                                              labelText: 'Prix par place',
+                                            ),
+                                            onChanged: (value) {
+                                              // Update price per place
+                                              setState(() {
+                                                filteredMarches[index]
+                                                        .prixPlace =
+                                                    int.parse(value);
+                                              });
+                                            },
                                           ),
-                                          onChanged: (value) {
-                                            // Update price per place
-                                            setState(() {
-                                              filteredMarches[index].prixPlace =
-                                                  int.parse(value);
-                                            });
-                                          },
                                         ),
                                       ],
                                     ),
@@ -220,31 +232,41 @@ class _MarchesScreenState extends State<MarchesScreen> {
               return AlertDialog(
                 title: Text('Ajouter un marché'),
                 content: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    TextField(
-                      decoration: InputDecoration(
-                        labelText: 'Nom du marché',
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextField(
+                        decoration: InputDecoration(
+                          labelText: 'Nom du marché',
+                        ),
+                        onChanged: (value) {
+                          newMarketName = value;
+                        },
                       ),
-                      onChanged: (value) {
-                        newMarketName = value;
-                      },
                     ),
-                    TextField(
-                      decoration: InputDecoration(
-                        labelText: 'Nombre de places',
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextField(
+                        decoration: InputDecoration(
+                          labelText: 'Nombre de places',
+                        ),
+                        onChanged: (value) {
+                          newMarketNombrePlaces = int.parse(value);
+                        },
                       ),
-                      onChanged: (value) {
-                        newMarketNombrePlaces = int.parse(value);
-                      },
                     ),
-                    TextField(
-                      decoration: InputDecoration(
-                        labelText: 'Prix par place',
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextField(
+                        decoration: InputDecoration(
+                          labelText: 'Prix par place',
+                        ),
+                        onChanged: (value) {
+                          newMarketPrixPlace = int.parse(value);
+                        },
                       ),
-                      onChanged: (value) {
-                        newMarketPrixPlace = int.parse(value);
-                      },
                     ),
                   ],
                 ),
@@ -257,17 +279,25 @@ class _MarchesScreenState extends State<MarchesScreen> {
                   ),
                   TextButton(
                     child: Text('Ajouter'),
-                    onPressed: () {
-                      setState(() {
-                        _marches.add(Marche(
-                          id: _marches.length + 1,
-                          nom: newMarketName,
-                          nombrePlaces: newMarketNombrePlaces,
-                          prixPlace: newMarketPrixPlace,
-                          placesOccupees: 0,
-                        ));
-                        filterMarches();
-                      });
+                    onPressed: () async {
+                      await _patenteManagement.ajouterMarche(
+                          Marche(
+                            nom: newMarketName,
+                            nombrePlaces: newMarketNombrePlaces,
+                            prixPlace: newMarketPrixPlace,
+                          ),
+                          EthereumAddress.fromHex(
+                              "0xC232db3AE5eeaaf67a31cdbA2b448fA323FDABF7"));
+                      // setState(() {
+                      //   _marches.add(Marche(
+                      //     id: _marches.length + 1,
+                      //     nom: newMarketName,
+                      //     nombrePlaces: newMarketNombrePlaces,
+                      //     prixPlace: newMarketPrixPlace,
+                      //     placesOccupees: 0,
+                      //   ));
+                      //   filterMarches();
+                      // });
                       Navigator.of(context).pop();
                     },
                   ),
@@ -282,18 +312,18 @@ class _MarchesScreenState extends State<MarchesScreen> {
 }
 
 class Marche {
-  final int id;
+  int? id;
   String nom;
   int nombrePlaces;
   int prixPlace;
-  int placesOccupees;
+  int? placesOccupees;
 
   Marche({
-    required this.id,
+    this.id,
     required this.nom,
     required this.nombrePlaces,
     required this.prixPlace,
-    required this.placesOccupees,
+    this.placesOccupees,
   });
 
   factory Marche.fromEvent(List<dynamic> json) {

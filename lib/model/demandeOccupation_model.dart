@@ -44,25 +44,32 @@ class DemandeOccupation {
 class DemandeOccupationValidee {
   int idoccupation;
   int idMarche;
+  int place;
   String dateDebut;
   String dateFin;
-  EthereumAddress addressAgent;
+  int idContribuable;
+  EthereumAddress? addressAgent;
 
   DemandeOccupationValidee({
     required this.idoccupation,
     required this.idMarche,
+    required this.place,
     required this.dateDebut,
     required this.dateFin,
-    required this.addressAgent,
+    required this.idContribuable,
+    // required this.addressAgent,
+    this.addressAgent,
   });
 
   factory DemandeOccupationValidee.fromEvent(List<dynamic> json) {
     return DemandeOccupationValidee(
       idoccupation: json[0].toInt(),
       idMarche: json[1],
-      dateDebut: json[2],
-      dateFin: json[3],
-      addressAgent: EthereumAddress.fromHex(json[4]),
+      place: json[2].toInt(),
+      dateDebut: json[3],
+      dateFin: json[4],
+      idContribuable: json[5].toInt(),
+      addressAgent: EthereumAddress.fromHex(json[6]),
     );
   }
 }

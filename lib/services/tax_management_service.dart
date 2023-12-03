@@ -9,6 +9,7 @@ import 'package:pfe_block/constants/private_key.dart';
 import 'package:pfe_block/model/activite_model.dart';
 import 'package:pfe_block/model/commerce_model.dart';
 import 'package:pfe_block/model/contribuable_model.dart';
+import 'package:pfe_block/model/patente_model.dart';
 import 'package:pfe_block/pages/admin/marchePage.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:web_socket_channel/io.dart';
@@ -128,6 +129,27 @@ class PatenteManagement {
         contribuables.add(a);
       }
     }
+    // contribuables = contractCall.map((e) => null)
+    return contribuables;
+  }
+
+  Future<Contribuable?> getContribuable(int contribuableId) async {
+    isLoading = true;
+    await setup();
+    final contribuableFunction = _contract!.function("contribuables");
+    BigInt cId = await _web3client!.getChainId();
+
+    Credentials credential = EthPrivateKey.fromHex(privateKey);
+    List<dynamic> contractCall = await _web3client!.call(
+        contract: _contract!,
+        function: contribuableFunction,
+        params: [BigInt.from(contribuableId)],
+        atBlock: BlockNum.current());
+
+    print(contractCall);
+
+    Contribuable contribuables = Contribuable.fromEvent(contractCall);
+
     // contribuables = contractCall.map((e) => null)
     return contribuables;
   }
@@ -597,6 +619,138 @@ class PatenteManagement {
   //   // TODO: implement ajouterActivite
 
   // }
+  Future<List<Patente>> getPatentesNonPayer() async {
+    isLoading = true;
+    await setup();
+    final patenteFunction = _contract!.function("getPatentesNonPayer");
+    BigInt cId = await _web3client!.getChainId();
+
+    List<Patente> patentes = [];
+    Credentials credential = EthPrivateKey.fromHex(privateKey);
+    List contractCall = await _web3client!.call(
+      contract: _contract!,
+      function: patenteFunction,
+      params: [],
+      atBlock: BlockNum.current(),
+    );
+
+    for (var element in contractCall[0]) {
+      Patente patente = Patente.fromJson(element);
+
+      patentes.add(patente);
+    }
+
+    isLoading = false;
+    return patentes;
+  }
+
+  Future<List<Patente>> getPatentesPayer() async {
+    isLoading = true;
+    await setup();
+    final patenteFunction = _contract!.function("getPatentesNonPayer");
+    BigInt cId = await _web3client!.getChainId();
+
+    List<Patente> patentes = [];
+    Credentials credential = EthPrivateKey.fromHex(privateKey);
+    List contractCall = await _web3client!.call(
+      contract: _contract!,
+      function: patenteFunction,
+      params: [],
+      atBlock: BlockNum.current(),
+    );
+
+    for (var element in contractCall[0]) {
+      Patente patente = Patente.fromJson(element);
+
+      patentes.add(patente);
+    }
+
+    isLoading = false;
+    return patentes;
+  }
+
+  Future<List<Patente>> getPatentesByContribuable(
+      EthereumAddress _contribuablesAddress) async {
+    isLoading = true;
+    await setup();
+    final patenteFunction = _contract!.function("getPatenteByContribuable");
+    BigInt cId = await _web3client!.getChainId();
+
+    List<Patente> patentes = [];
+    Credentials credential = EthPrivateKey.fromHex(privateKey);
+    List contractCall = await _web3client!.call(
+      contract: _contract!,
+      function: patenteFunction,
+      params: [_contribuablesAddress],
+      atBlock: BlockNum.current(),
+    );
+
+    for (var element in contractCall[0]) {
+      Patente patente = Patente.fromJson(element);
+
+      patentes.add(patente);
+    }
+
+    isLoading = false;
+    return patentes;
+  }
+
+  Future<void> ajouterPatente(int _contribuableId, int _anneePaiement,
+      EthereumAddress addressExpediteur) async {
+    isLoading = true;
+
+    var result = _contract!.function("creerPatente");
+    BigInt cId = await _web3client!.getChainId();
+    String privateKey = "";
+    ethereumAccounts.forEach((key, value) {
+      if (key == addressExpediteur.hexEip55) {
+        privateKey = value;
+      }
+    });
+    Credentials credential = EthPrivateKey.fromHex(privateKey);
+    await _web3client!
+        .sendTransaction(
+            credential,
+            Transaction.callContract(
+                contract: _contract!,
+                function: result,
+                parameters: [
+                  BigInt.from(_contribuableId),
+                  BigInt.from(_anneePaiement),
+                ],
+                from: addressExpediteur),
+            chainId: cId.toInt())
+        .then((value) {
+      print(value.toString());
+
+      isLoading = false;
+      return null;
+    });
+    await setup();
+  }
+
+  Future<List<Patente>> getPatenteValideeEvents() async {
+    isLoading = true;
+
+    final patenteAjouteEvent = _contract!.events[2];
+    final filter = FilterOptions.events(
+      contract: _contract!,
+      event: patenteAjouteEvent,
+      fromBlock: BlockNum.genesis(),
+      toBlock: BlockNum.current(),
+    );
+    final logs = await _web3client!.getLogs(filter);
+
+    List<Patente> patentes = [];
+    for (var log in logs) {
+      final decoded = patenteAjouteEvent.decodeResults(log.topics!, log.data!);
+      // Patente patente = Patente.fromJson(decoded);
+      // patentes.add(patente);
+      // print(patente.toString());
+    }
+
+    return patentes;
+  }
 
   Future<void> ajouterActivite(
       Activite activite, EthereumAddress addressExpediteur) async {
@@ -696,5 +850,40 @@ class PatenteManagement {
     });
     await setup();
     isLoading = false;
+  }
+
+  Future<void> ajouterMarche(
+      Marche marche, EthereumAddress addressExpediteur) async {
+    isLoading = true;
+
+    var result = _contract!.function("ajouterMarche");
+    BigInt cId = await _web3client!.getChainId();
+    String privateKey = "";
+    ethereumAccounts.forEach((key, value) {
+      if (key == addressExpediteur.hexEip55) {
+        privateKey = value;
+      }
+    });
+    Credentials credential = EthPrivateKey.fromHex(privateKey);
+    await _web3client!
+        .sendTransaction(
+            credential,
+            Transaction.callContract(
+                contract: _contract!,
+                function: result,
+                parameters: [
+                  marche.nom,
+                  BigInt.from(marche.nombrePlaces),
+                  BigInt.from(marche.prixPlace),
+                ],
+                from: addressExpediteur),
+            chainId: cId.toInt())
+        .then((value) {
+      print(value.toString());
+
+      isLoading = false;
+      return null;
+    });
+    await setup();
   }
 }

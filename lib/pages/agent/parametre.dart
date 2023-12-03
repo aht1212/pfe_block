@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -32,6 +33,14 @@ class SettingsPage extends StatelessWidget {
             leading: Icon(Icons.delete),
             title: Text('Supprimer les données'),
             onTap: () {
+              // TODO: Ajouter la logique pour supprimer les données de l'application.
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.logout_outlined),
+            title: Text('Déconnexion'),
+            onTap: () async {
+              await FirebaseAuth.instance.signOut();
               // TODO: Ajouter la logique pour supprimer les données de l'application.
             },
           ),

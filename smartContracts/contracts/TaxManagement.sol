@@ -273,8 +273,6 @@ contract TaxManagement {
     patentes[patentesCount] = nouvellePatente;
     patentesCount++;
     
-    // Stocker l'ID de la patente dans le contribuable correspondant
-    // contribuable.patenteId = nouvellePatente.id;
 }
 function payerPatente(uint patenteId, uint sommePayee) public seulementContribuable {
     require(!patentes[patenteId].estPayee, "Cette patente a deja ete payee.");
@@ -291,9 +289,6 @@ function payerPatente(uint patenteId, uint sommePayee) public seulementContribua
 
     }
     
-    // Envoyer les fonds vers le service des impots
-    // Mettre a jour l'annee de paiement de la patente
-    // patentes[patenteId].anneePaiement = 2024; // Mettre l'annee de paiement suivante ici
 }
 
 
@@ -452,13 +447,14 @@ return patenteList;
  
     function ajouterMarche(string memory _nom, uint _nombrePlaces, uint _prixPlace) public seulementAdmin {
         
-        Marche storage nouveauMarche = marches({
-        id = marcheCount;
-        nom = _nom;
-        nombrePlaces = _nombrePlaces;
-        prixPlace = _prixPlace;
-        placesOccupees = 0;  
+        Marche memory nouveauMarche = Marche({
+        id : marcheCount,
+        nom : _nom,
+        nombrePlaces : _nombrePlaces,
+        prixPlace : _prixPlace,
+        placesOccupees : 0
         });
+
         marches[marcheCount] = nouveauMarche; 
                marcheCount++;
 
