@@ -451,7 +451,7 @@ class PatenteManagement {
   Future<void> ajouterContribuable(
       Contribuable contribuable, EthereumAddress addressExpediteur) async {
     isLoading = true;
-
+    await setup();
     // Récupérez l'objet ContractFunction pour la fonction "ajouterContribuable"
     var result = _contract!.function("ajouterContribuable");
 
@@ -501,7 +501,7 @@ class PatenteManagement {
       print(value.toString());
       isLoading = false;
     });
-    register(
+    await register(
       contribuable.email,
       contribuable.nom + contribuable.prenom,
     );
@@ -698,7 +698,7 @@ class PatenteManagement {
   Future<void> ajouterPatente(int _contribuableId, int _anneePaiement,
       EthereumAddress addressExpediteur) async {
     isLoading = true;
-
+    await setup();
     var result = _contract!.function("creerPatente");
     BigInt cId = await _web3client!.getChainId();
     String privateKey = "";

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:text_scroll/text_scroll.dart';
 
-class SelectCommercePage extends StatefulWidget {
-  const SelectCommercePage({
+class SelectPatentePage extends StatefulWidget {
+  const SelectPatentePage({
     super.key,
     required this.refCommerce,
   });
   final String refCommerce;
   @override
-  State<SelectCommercePage> createState() => _SelectCommercePageState();
+  State<SelectPatentePage> createState() => _SelectPatentePageState();
 }
 
-class _SelectCommercePageState extends State<SelectCommercePage> {
+class _SelectPatentePageState extends State<SelectPatentePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

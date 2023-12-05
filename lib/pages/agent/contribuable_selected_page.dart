@@ -22,18 +22,19 @@ String? addressAgent;
 class _ContribuableSelectedPageState extends State<ContribuableSelectedPage> {
   PatenteManagement _patenteManagement = PatenteManagement();
   Contribuable? _contribuable;
-  Future<Contribuable> getContribuable(int idContribuable) async {
+  Future<Contribuable?> getContribuable(int idContribuable) async {
     _contribuable = await _patenteManagement.getContribuable(idContribuable);
     _patentesPayer = await _patenteManagement
         .getPatentesByContribuable(_contribuable!.ethAddress);
     List<Agent> agents = await _patenteManagement.getAgentAjouteEvents();
 
     addressAgent = await getUserEthAddress();
-
+    // contribuableAdress = _contribuable!.ethAddress;
     return _contribuable!;
   }
 
-  late Future<Contribuable> getContribuableInfo;
+// EthereumAddress? contribuableAdress;
+  late Future<Contribuable?> getContribuableInfo;
   List<Patente> _patentesPayer = [];
 
   @override
@@ -47,214 +48,216 @@ class _ContribuableSelectedPageState extends State<ContribuableSelectedPage> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      initialIndex: 0,
-      length: 2,
-      child: Scaffold(
-          appBar: AppBar(
-            centerTitle: true,
-            title: const Text("Recouvrement"),
-            bottom: const TabBar(tabs: [
-              Tab(
-                text: "Recouvrer",
-                icon: Icon(Icons.perm_contact_calendar_rounded),
-              ),
-              Tab(
-                text: "Historique",
-                icon: Icon(Icons.work_history_outlined),
-              ),
-            ]),
-          ),
-          body: TabBarView(children: [
-            Stack(
-              children: [
-                // Container(
-                //   height: 200,
-                //   decoration: BoxDecoration(
-                //     color: Theme.of(context).primaryColor,
-                //     borderRadius: BorderRadius.only(
-                //       bottomLeft: Radius.circular(30),
-                //       bottomRight: Radius.circular(30),
-                //     ),
-                //   ),
-                // ),
-                Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // SizedBox(height: 100),
-                      Container(
-                        width: double.infinity,
-                        height: 80,
-                        decoration: BoxDecoration(
-                            color: Theme.of(context).cardColor,
-                            backgroundBlendMode: BlendMode.plus),
-                        child: CircleAvatar(
-                          radius: 50,
-                          backgroundColor: Colors.white,
-                          child: Icon(
-                            Icons.person,
-                            size: 60,
-                            color: Theme.of(context).primaryColor,
-                          ),
-                        ),
-                      ),
-                      FutureBuilder(
-                          future: getContribuableInfo,
-                          builder: (BuildContext context, snapshot) {
-                            if (snapshot.hasData) {
-                              Contribuable contribuable = snapshot.data!;
-                              return Expanded(
-                                  child: Column(
-                                children: [
-                                  ListTile(
-                                    title: Text(
-                                      contribuable.denomination,
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
+        initialIndex: 0,
+        length: 2,
+        child: Scaffold(
+            appBar: AppBar(
+              centerTitle: true,
+              title: const Text("Recouvrement"),
+              bottom: const TabBar(tabs: [
+                Tab(
+                  text: "Recouvrer",
+                  icon: Icon(Icons.perm_contact_calendar_rounded),
+                ),
+                Tab(
+                  text: "Historique",
+                  icon: Icon(Icons.work_history_outlined),
+                ),
+              ]),
+            ),
+            body: FutureBuilder(
+                future: getContribuableInfo,
+                builder: (BuildContext context, snapshot) {
+                  if (snapshot.hasData) {
+                    _contribuable = snapshot.data;
+                    return TabBarView(children: [
+                      Stack(
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // SizedBox(height: 100),
+
+                                Expanded(
+                                    child: Column(
+                                  children: [
+                                    ListTile(
+                                      leading: CircleAvatar(
+                                        radius: 50,
+                                        backgroundColor: Colors.white,
+                                        child: Icon(
+                                          Icons.person,
+                                          size: 60,
+                                          color: Theme.of(context).primaryColor,
+                                        ),
+                                      ),
+                                      title: Text(
+                                        _contribuable!.denomination,
+                                        style: TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                          "${_contribuable!.prenom + " " + _contribuable!.nom}"),
+                                    ),
+                                    Expanded(
+                                      child: SingleChildScrollView(
+                                        child: Column(
+                                          children: [
+                                            Divider(),
+                                            ListTile(
+                                              leading: Icon(Icons.phone),
+                                              trailing: Text(_contribuable!
+                                                  .contact
+                                                  .toString()),
+                                              title:
+                                                  Text("Numéro de téléphone"),
+                                            ),
+                                            Divider(),
+                                            ListTile(
+                                              leading: Icon(Icons.email),
+                                              trailing: Text(_contribuable!
+                                                  .email
+                                                  .toString()),
+                                              title: Text("Adresse e-mail"),
+                                            ),
+                                            Divider(),
+                                            ListTile(
+                                              leading: Icon(Icons.location_on),
+                                              trailing: Text(_contribuable!
+                                                  .adresse
+                                                  .toString()),
+                                              title: Text("Adresse"),
+                                            ),
+                                            Divider(),
+                                            ListTile(
+                                              leading: Icon(Icons.date_range),
+                                              trailing: Text(_contribuable!
+                                                  .dateCreation
+                                                  .toString()),
+                                              title: Text("Date de creation"),
+                                            ),
+                                            Divider(),
+                                            ListTile(
+                                              leading: Icon(Icons.work),
+                                              trailing: Text(_contribuable!
+                                                  .typeContribuable
+                                                  .toString()),
+                                              title:
+                                                  Text("Type de contribuable"),
+                                            ),
+                                            Divider(),
+                                            ListTile(
+                                              leading: Icon(Icons.person),
+                                              trailing: Text(_contribuable!
+                                                  .nombreEmployes
+                                                  .toString()),
+                                              title: Text("Nombre d'employés"),
+                                            ),
+                                            Divider(),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                    subtitle: Text(
-                                        "${contribuable.prenom + " " + contribuable.nom}"),
-                                  ),
-                                  Expanded(
-                                    child: SingleChildScrollView(
-                                      child: Column(
-                                        children: [
-                                          Divider(),
-                                          ListTile(
-                                            leading: Icon(Icons.phone),
-                                            trailing: Text(contribuable.contact
-                                                .toString()),
-                                            title: Text("Numéro de téléphone"),
-                                          ),
-                                          Divider(),
-                                          ListTile(
-                                            leading: Icon(Icons.email),
-                                            trailing: Text(
-                                                contribuable.email.toString()),
-                                            title: Text("Adresse e-mail"),
-                                          ),
-                                          Divider(),
-                                          ListTile(
-                                            leading: Icon(Icons.location_on),
-                                            trailing: Text(contribuable.adresse
-                                                .toString()),
-                                            title: Text("Adresse"),
-                                          ),
-                                          Divider(),
-                                          ListTile(
-                                            leading: Icon(Icons.date_range),
-                                            trailing: Text(contribuable
-                                                .dateCreation
-                                                .toString()),
-                                            title: Text("Date de creation"),
-                                          ),
-                                          Divider(),
-                                          ListTile(
-                                            leading: Icon(Icons.work),
-                                            trailing: Text(contribuable
-                                                .typeContribuable
-                                                .toString()),
-                                            title: Text("Type de contribuable"),
-                                          ),
-                                          Divider(),
-                                          ListTile(
-                                            leading: Icon(Icons.person),
-                                            trailing: Text(contribuable
-                                                .nombreEmployes
-                                                .toString()),
-                                            title: Text("Nombre d'employés"),
-                                          ),
-                                          Divider(),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  _patentesPayer.isEmpty ||
-                                          !(_patentesPayer.any((element) =>
-                                              element.anneePaiement ==
-                                              DateTime.now().year))
-                                      ? Center(
-                                          child: GradientButtonFb4(
-                                            text: "Recouvrer",
-                                            onPressed: () async {
-                                              // await _patenteManagement.ajouterPatente(
-                                              //     contribuable.id!,
-                                              //     DateTime.now().year,
-                                              //     EthereumAddress.fromHex(
-                                              //         addressAgent!));
-                                              // setState(() {
-                                              //   getContribuableInfo = getContribuable(
-                                              //       widget.contribuableId);
-                                              // });
-                                              showModalBottomSheet(
-                                                  context: context,
-                                                  builder:
-                                                      (BuildContext context) {
-                                                    return Row(
-                                                      children: [
-                                                        Expanded(
-                                                          child: Column(
-                                                            children: [
-                                                              Center(
-                                                                child: ListTile(
-                                                                  titleAlignment:
-                                                                      ListTileTitleAlignment
-                                                                          .center,
-                                                                  title: Text(
-                                                                    "Code Qr de validation de la transaction",
-                                                                    style: TextStyle(
-                                                                        fontWeight:
-                                                                            FontWeight.bold),
+                                    _patentesPayer.isEmpty ||
+                                            !(_patentesPayer.any((element) =>
+                                                element.anneePaiement ==
+                                                DateTime.now().year))
+                                        ? Center(
+                                            child: GradientButtonFb4(
+                                              text: "Recouvrer",
+                                              onPressed: () async {
+                                                int nextPatenteId = 0;
+                                                await _patenteManagement
+                                                    .ajouterPatente(
+                                                        _contribuable!.id!,
+                                                        DateTime.now().year,
+                                                        EthereumAddress.fromHex(
+                                                            addressAgent!));
+                                                setState(() {
+                                                  getContribuableInfo =
+                                                      getContribuable(widget
+                                                          .contribuableId);
+                                                });
+
+                                                List<Patente> nextPatentes =
+                                                    await _patenteManagement
+                                                        .getPatentesByContribuable(
+                                                            _contribuable!
+                                                                .ethAddress);
+
+                                                nextPatenteId =
+                                                    nextPatentes.last.id;
+                                                showModalBottomSheet(
+                                                    context: context,
+                                                    builder:
+                                                        (BuildContext context) {
+                                                      return Row(
+                                                        children: [
+                                                          Expanded(
+                                                            child: Column(
+                                                              children: [
+                                                                Center(
+                                                                  child:
+                                                                      ListTile(
+                                                                    titleAlignment:
+                                                                        ListTileTitleAlignment
+                                                                            .center,
+                                                                    title: Text(
+                                                                      "Code Qr de validation de la transaction",
+                                                                      style: TextStyle(
+                                                                          fontWeight:
+                                                                              FontWeight.bold),
+                                                                    ),
                                                                   ),
                                                                 ),
-                                                              ),
-                                                              Divider(),
-                                                              QrImageView(
-                                                                data:
-                                                                    'This is a simple QR code',
-                                                                version:
-                                                                    QrVersions
-                                                                        .auto,
-                                                                size: 320,
-                                                                gapless: false,
-                                                              ),
-                                                              Divider(),
-                                                              Text(
-                                                                  "Faites scanner le code qr par le contribuable svp")
-                                                            ],
+                                                                Divider(),
+                                                                QrImageView(
+                                                                  data:
+                                                                      '${nextPatenteId}',
+                                                                  version:
+                                                                      QrVersions
+                                                                          .auto,
+                                                                  size: 320,
+                                                                  gapless:
+                                                                      false,
+                                                                ),
+                                                                Divider(),
+                                                                Text(
+                                                                    "Faites scanner le code qr par le contribuable svp")
+                                                              ],
+                                                            ),
                                                           ),
-                                                        ),
-                                                      ],
-                                                    );
-                                                  });
-                                            },
-                                          ),
-                                        )
-                                      : Container()
-                                ],
-                              ));
-                            } else if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return Center(child: CircularProgressIndicator());
-                            } else {
-                              return Center(
-                                child: Text(snapshot.error.toString()),
-                              );
-                            }
-                          }),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            Center(
-              child: Text("Historique des tansactions validées"),
-            )
-          ])),
-    );
+                                                        ],
+                                                      );
+                                                    });
+                                              },
+                                            ),
+                                          )
+                                        : Container()
+                                  ],
+                                )),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      ContribuableRecouvrementHistoric(
+                        contribuable: _contribuable!,
+                      )
+                    ]);
+                  } else if (snapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else {
+                    return Center(
+                      child: Text(snapshot.error.toString()),
+                    );
+                  }
+                })));
   }
 }
 
@@ -293,5 +296,142 @@ class GradientButtonFb4 extends StatelessWidget {
               text,
               style: const TextStyle(color: Colors.white),
             )));
+  }
+}
+
+class ContribuableRecouvrementHistoric extends StatefulWidget {
+  final Contribuable contribuable;
+  const ContribuableRecouvrementHistoric(
+      {super.key, required this.contribuable});
+
+  @override
+  State<ContribuableRecouvrementHistoric> createState() =>
+      _ContribuableRecouvrementHistoricState();
+}
+
+class _ContribuableRecouvrementHistoricState
+    extends State<ContribuableRecouvrementHistoric> {
+  PatenteManagement _patenteManagement = PatenteManagement();
+  List<Patente> patentes = [];
+  Future<List<Patente>> getContribuablePatentes(
+      Contribuable contribuable) async {
+    patentes = await _patenteManagement
+        .getPatentesByContribuable(contribuable.ethAddress);
+
+    return patentes;
+  }
+
+  late Future<List<Patente>> _getPatenteFuture;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _getPatenteFuture = getContribuablePatentes(widget.contribuable);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+        future: _getPatenteFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Erreur de chargement des patentes.'));
+          } else if (snapshot.hasData && (snapshot.data!.isEmpty)) {
+            return Center(child: Text('Aucune patente enregistré.'));
+          } else {
+            patentes = patentes
+                .where((element) => element.anneePaiement != 0)
+                .toList();
+            if (patentes.length != 0) {
+              return ListView.separated(
+                  itemCount: patentes.length,
+                  separatorBuilder: (BuildContext context, int index) =>
+                      Divider(),
+                  itemBuilder: (BuildContext context, int index) {
+                    return ListTile(
+                      trailing: patentes[index].estPayee
+                          ? Column(
+                              children: [
+                                Icon(Icons.verified),
+                                Text("Payer"),
+                              ],
+                            )
+                          : Column(
+                              children: [
+                                Icon(Icons.verified_outlined),
+                                Text("Non Payer"),
+                              ],
+                            ),
+                      title: Text("Patentes N°${patentes[index].id}"),
+                      subtitle: Text("${patentes[index].anneePaiement}"),
+                      onTap: () {
+                        showModalBottomSheet(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      children: [
+                                        SizedBox(
+                                          height: 20,
+                                          child: Center(
+                                            child: Text(
+                                              "Patente de ${widget.contribuable.denomination} - ${patentes[index].anneePaiement}",
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                        ),
+                                        Divider(),
+                                        patentes[index].estPayee
+                                            ? Column(
+                                                children: [
+                                                  Text(
+                                                    "Déjà payé",
+                                                    style: TextStyle(
+                                                        fontSize: Theme.of(
+                                                                context)
+                                                            .primaryTextTheme
+                                                            .headlineLarge!
+                                                            .fontSize),
+                                                  ),
+                                                  Icon(
+                                                    Icons.verified,
+                                                    size: 200,
+                                                  ),
+                                                ],
+                                              )
+                                            : QrImageView(
+                                                data: '${patentes[index].id}',
+                                                version: QrVersions.auto,
+                                                size: 320,
+                                                gapless: false,
+                                              ),
+                                        Divider(),
+                                        Text(
+                                            "Montant : ${patentes[index].droitFixe + patentes[index].droitProportionnel}"),
+                                        Text(
+                                            "Faites scanner le code qr par le contribuable svp")
+
+                                        //  patentes[index].estPayee ? Container() : GradientButtonFb4(text: "", onPressed: onPressed)
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            });
+                      },
+                    );
+                  });
+            } else {
+              return Center(child: Text('Aucune patente enregistré.'));
+            }
+          }
+        });
   }
 }

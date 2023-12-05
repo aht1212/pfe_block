@@ -408,6 +408,12 @@ class _RegisterContribuableFormState extends State<RegisterContribuableForm> {
                         ),
                         EthereumAddress.fromHex(
                             "0xC232db3AE5eeaaf67a31cdbA2b448fA323FDABF7"));
+
+                    CollectionReference usersRef =
+                        FirebaseFirestore.instance.collection('users');
+
+                    await usersRef
+                        .add({"email": _email, "adresseEth": _ethAdress});
                   }
 
                   Navigator.of(context).pop();
@@ -504,12 +510,8 @@ class _ContribuableListState extends State<ContribuableList> {
     await _patenteManagement.ajouterContribuable(contribuable,
         EthereumAddress.fromHex("0xC232db3AE5eeaaf67a31cdbA2b448fA323FDABF7"));
 
-    CollectionReference usersRef =
-        FirebaseFirestore.instance.collection('users');
-
-    await usersRef.add({
-      "email": contribuable.email,
-      "adresseEth": contribuable.ethAddress.hexEip55
+    setState(() {
+      _contribuablesFuture = widget.contribuableListFuture;
     });
   }
 

@@ -78,33 +78,42 @@ class _ContribuablesListPageState extends State<ContribuablesListPage> {
       body: FutureBuilder(
           future: _contribuablesFuture,
           builder: (context, snapshot) {
-            return ListView.separated(
-              itemCount: _contribuables.length,
-              separatorBuilder: (BuildContext context, int index) => Divider(),
-              itemBuilder: (BuildContext context, int index) {
-                Contribuable contribuable = _contribuables[index];
-                var patenteAPayer = _patentesPayer.any((element) =>
-                    element.contribuableId == contribuable.id &&
-                    element.anneePaiement == DateTime.now().year);
-                return ListTile(
-                  leading: _buildAvatar(contribuable, patenteAPayer, context),
-                  title: Text('${contribuable.denomination}'),
-                  subtitle: Text(contribuable.adresse),
-                  trailing: Icon(Icons.arrow_forward),
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            fullscreenDialog: true,
-                            builder: (BuildContext context) =>
-                                ContribuableSelectedPage(
-                                    contribuableId: contribuable.id!)));
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Erreur de chargement des agents.'));
+            } else if (snapshot.hasData && snapshot.data!.isEmpty) {
+              return Center(child: Text('Aucun agent enregistré.'));
+            } else {
+              return ListView.separated(
+                itemCount: _contribuables.length,
+                separatorBuilder: (BuildContext context, int index) =>
+                    Divider(),
+                itemBuilder: (BuildContext context, int index) {
+                  Contribuable contribuable = _contribuables[index];
+                  var patenteAPayer = _patentesPayer.any((element) =>
+                      element.contribuableId == contribuable.id &&
+                      element.anneePaiement == DateTime.now().year);
+                  return ListTile(
+                    leading: _buildAvatar(contribuable, patenteAPayer, context),
+                    title: Text('${contribuable.denomination}'),
+                    subtitle: Text(contribuable.adresse),
+                    trailing: Icon(Icons.arrow_forward),
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              fullscreenDialog: true,
+                              builder: (BuildContext context) =>
+                                  ContribuableSelectedPage(
+                                      contribuableId: contribuable.id!)));
 
-                    // TODO: Ajouter la logique pour afficher les détails du contribuable sélectionné.
-                  },
-                );
-              },
-            );
+                      // TODO: Ajouter la logique pour afficher les détails du contribuable sélectionné.
+                    },
+                  );
+                },
+              );
+            }
           }),
     );
   }

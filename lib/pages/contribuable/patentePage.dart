@@ -1,16 +1,16 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:coupon_uikit/coupon_uikit.dart';
-import 'package:pfe_block/pages/contribuable/selectBoutiquePage.dart';
+import 'package:pfe_block/pages/contribuable/selectPatentePage.dart';
 import 'package:flutter/material.dart';
 
-class CommercePage extends StatefulWidget {
-  const CommercePage({super.key});
+class PatentePage extends StatefulWidget {
+  const PatentePage({super.key});
 
   @override
-  State<CommercePage> createState() => _CommercePageState();
+  State<PatentePage> createState() => _PatentePageState();
 }
 
-class _CommercePageState extends State<CommercePage> {
+class _PatentePageState extends State<PatentePage> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> images = [
@@ -24,32 +24,60 @@ class _CommercePageState extends State<CommercePage> {
           "3000", "339939292")
     ];
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Expanded(
-            child: CarouselSlider(
-              options: CarouselOptions(
-                  enableInfiniteScroll: false,
-                  viewportFraction: 0.4,
-                  // padEnds: false,
-                  // height: MediaQuery.of(context).size.height * 0.7,
-                  aspectRatio: 1,
-                  enlargeCenterPage: true,
-                  scrollDirection: Axis.vertical,
-                  // autoPlay: true,
-                  enlargeFactor: 0.13),
-              items: images,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Envoi d\'argent'),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text('Montant à envoyer:'),
+            TextField(
+              decoration: InputDecoration(
+                hintText: 'Entrer le montant',
+              ),
+              keyboardType: TextInputType.number,
             ),
-          ),
-        ],
+            SizedBox(height: 16.0),
+            Text('Montant disponible: 158 277€'),
+            SizedBox(height: 16.0),
+            Text('Transfert vers:'),
+            SizedBox(height: 8.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Column(
+                  children: <Widget>[
+                    Icon(Icons.account_balance),
+                    Text('Société Générale'),
+                  ],
+                ),
+                Column(
+                  children: <Widget>[
+                    Icon(Icons.account_balance),
+                    Text('Crédit Agricole'),
+                  ],
+                ),
+              ],
+            ),
+            SizedBox(height: 16.0),
+            FilledButton(
+              onPressed: () {
+                // Gérer la validation du paiement
+              },
+              child: Text('Valider le paiement'),
+              // color: Colors.blue,
+              // textColor: Colors.white,
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  CouponCard cupounCardGen(Color color, String datepayer, String nomCommerce,
+  CouponCard cupounCardGen(Color color, String datepayer, String nomPatente,
       String impayes, String numRef) {
     return CouponCard(
       height: 200,
@@ -119,7 +147,7 @@ class _CommercePageState extends State<CommercePage> {
             ),
             SizedBox(height: 4),
             Text(
-              nomCommerce,
+              nomPatente,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 24,
@@ -135,7 +163,7 @@ class _CommercePageState extends State<CommercePage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => SelectCommercePage(
+                            builder: (context) => SelectPatentePage(
                                   refCommerce: numRef,
                                 )),
                       );
