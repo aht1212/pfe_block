@@ -1,13 +1,11 @@
 import 'dart:convert';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:pfe_block/auth_api.dart';
 import 'package:pfe_block/constants/private_key.dart';
 import 'package:pfe_block/model/activite_model.dart';
-import 'package:pfe_block/model/commerce_model.dart';
 import 'package:pfe_block/model/contribuable_model.dart';
 import 'package:pfe_block/model/patente_model.dart';
 import 'package:pfe_block/pages/admin/marchePage.dart';
@@ -15,7 +13,6 @@ import 'package:web3dart/web3dart.dart';
 import 'package:web_socket_channel/io.dart';
 
 import '../model/agent_model.dart';
-import '../model/demandeOccupation_model.dart';
 import '../model/demandeOccupation_model.dart';
 
 class PatenteManagement {
@@ -729,10 +726,10 @@ class PatenteManagement {
     await setup();
   }
 
-  Future<List<Patente>> getPatenteValideeEvents() async {
+  Future<List<Patente>> getPatentesEvents() async {
     isLoading = true;
 
-    final patenteAjouteEvent = _contract!.events[2];
+    final patenteAjouteEvent = _contract!.events[3];
     final filter = FilterOptions.events(
       contract: _contract!,
       event: patenteAjouteEvent,
@@ -744,9 +741,9 @@ class PatenteManagement {
     List<Patente> patentes = [];
     for (var log in logs) {
       final decoded = patenteAjouteEvent.decodeResults(log.topics!, log.data!);
-      // Patente patente = Patente.fromJson(decoded);
-      // patentes.add(patente);
-      // print(patente.toString());
+      Patente patente = Patente.fromEvent(decoded);
+      patentes.add(patente);
+      print(patente.toString());
     }
 
     return patentes;
@@ -875,6 +872,40 @@ class PatenteManagement {
                   marche.nom,
                   BigInt.from(marche.nombrePlaces),
                   BigInt.from(marche.prixPlace),
+                ],
+                from: addressExpediteur),
+            chainId: cId.toInt())
+        .then((value) {
+      print(value.toString());
+
+      isLoading = false;
+      return null;
+    });
+    await setup();
+  }
+
+  Future<void> payerPatente(int idSelectionPatente, int montantPayer,
+      EthereumAddress addressExpediteur) async {
+    isLoading = true;
+
+    var result = _contract!.function("payerPatente");
+    BigInt cId = await _web3client!.getChainId();
+    String privateKey = "";
+    ethereumAccounts.forEach((key, value) {
+      if (key == addressExpediteur.hexEip55) {
+        privateKey = value;
+      }
+    });
+    Credentials credential = EthPrivateKey.fromHex(privateKey);
+    await _web3client!
+        .sendTransaction(
+            credential,
+            Transaction.callContract(
+                contract: _contract!,
+                function: result,
+                parameters: [
+                  BigInt.from(idSelectionPatente),
+                  BigInt.from(montantPayer)
                 ],
                 from: addressExpediteur),
             chainId: cId.toInt())

@@ -26,18 +26,20 @@ class Patente {
       droitFixe: json[2].toInt(),
       droitProportionnel: json[3].toInt(),
       anneePaiement: json[4].toInt(),
+      // sommePayee: json[5] == null ? null : json[5].,
       estPayee: json[5],
     );
   }
 
-  factory Patente.fromEvent(Map<String, dynamic> json) {
+  factory Patente.fromEvent(List<dynamic> json) {
     return Patente(
-      id: json['id'],
-      contribuableId: json['contribuableId'],
-      droitFixe: json['droitFixe'],
-      droitProportionnel: json['droitProportionnel'],
-      anneePaiement: json['anneePaiement'],
-      estPayee: json['estPayee'],
+      id: json[0].toInt(),
+      contribuableId: json[1].toInt(),
+      droitFixe: json[2].toInt(),
+      droitProportionnel: json[3].toInt(),
+      anneePaiement: json[4].toInt(),
+      sommePayee: json[5] == null ? 0 : json[5].toInt(),
+      estPayee: json[6],
     );
   }
   Map<String, dynamic> toJson() {
