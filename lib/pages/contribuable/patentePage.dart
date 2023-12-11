@@ -7,6 +7,7 @@ import 'package:pfe_block/pages/agent/contribuableListPage.dart';
 import 'package:pfe_block/pages/contribuable/selectPatentePage.dart';
 import 'package:flutter/material.dart';
 import 'package:pfe_block/services/tax_management_service.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:web3dart/web3dart.dart';
 
 class PatentePage extends StatefulWidget {
@@ -33,14 +34,35 @@ class _PatentePageState extends State<PatentePage> {
   Future<List<Patente>> getPatenteImpaye() async {
     String? addressContribuable = await getUserEthAddress();
 
-    _patentes = await _patenteManagement.getPatentesByContribuable(
-        EthereumAddress.fromHex(addressContribuable!));
+    List<Patente> _patentesByContribuable =
+        await _patenteManagement.getPatentesByContribuable(
+            EthereumAddress.fromHex(addressContribuable!));
 
     _patenteEvent = await _patenteManagement.getPatentesEvents();
+    for (int i = 0; i < _patentesByContribuable.length; i++) {
+      List<Patente> patentePayedByContribuableByPatente = _patenteEvent
+          .where((element) => element.id == _patentesByContribuable[i].id)
+          .toList();
+      int totalAmountPaid = patentePayedByContribuableByPatente
+          .map<int>((patente) => patente.sommePayee ?? 0)
+          .fold(0, (sum, amount) => sum + amount);
+      int montantDue = patentePayedByContribuableByPatente.first.droitFixe +
+          patentePayedByContribuableByPatente.first.droitProportionnel;
 
-    for (var element in _patentes) {
-      montantPayer = montantPayer + (element.sommePayee ?? 0);
-      montAPayer = montAPayer + element.droitFixe + element.droitProportionnel;
+      if (totalAmountPaid < montantDue) {
+        _patentes.add(Patente(
+            id: patentePayedByContribuableByPatente[i].id,
+            contribuableId:
+                patentePayedByContribuableByPatente[i].contribuableId,
+            droitFixe: patentePayedByContribuableByPatente[i].droitFixe,
+            droitProportionnel:
+                patentePayedByContribuableByPatente[i].droitProportionnel,
+            anneePaiement: patentePayedByContribuableByPatente[i].anneePaiement,
+            estPayee: false,
+            sommePayee: totalAmountPaid));
+        montAPayer = montantDue;
+        montantPayer = totalAmountPaid;
+      }
     }
 
     return _patentes;
@@ -63,7 +85,16 @@ class _PatentePageState extends State<PatentePage> {
       appBar: AppBar(
         centerTitle: true,
         title: Text('Patentes'),
-        actions: [IconButton(onPressed: () {}, icon: Icon(Icons.history))],
+        actions: [
+          IconButton(
+              onPressed: () {
+                Navigator.of(context)
+                    .push(MaterialPageRoute(builder: (context) {
+                  return HistoriqueContribuablePatente();
+                }));
+              },
+              icon: Icon(Icons.history))
+        ],
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
@@ -444,29 +475,162 @@ class _PatentePageState extends State<PatentePage> {
   }
 }
 
-
 class HistoriqueContribuablePatente extends StatefulWidget {
   const HistoriqueContribuablePatente({super.key});
 
   @override
-  State<HistoriqueContribuablePatente> createState() => _HistoriqueContribuablePatenteState();
+  State<HistoriqueContribuablePatente> createState() =>
+      _HistoriqueContribuablePatenteState();
 }
 
-class _HistoriqueContribuablePatenteState extends State<HistoriqueContribuablePatente> {
+class _HistoriqueContribuablePatenteState
+    extends State<HistoriqueContribuablePatente> {
+  PatenteManagement _patenteManagement = PatenteManagement();
+  List<Patente> _patentes = [];
+  Future<List<Patente>> _getAllContribuablePatentes() async {
+    String? addressContribuable = await getUserEthAddress();
+
+    List<Patente> _patenteByID =
+        await _patenteManagement.getPatentesByContribuable(
+            EthereumAddress.fromHex(addressContribuable!));
+
+    List<Patente> _allPatentesPayed =
+        await _patenteManagement.getPatentesEvents();
+    _patentes = _allPatentesPayed
+        .where((element) =>
+            element.contribuableId ==
+            _patenteByID
+                .where((element) => element.contribuableId != 0)
+                .first
+                .contribuableId)
+        .toList();
+    return _patentes;
+  }
+
+  late Future<List<Patente>> _getPatentesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _getPatentesFuture = _getAllContribuablePatentes();
+  }
+
   @override
   Widget build(BuildContext context) {
- PatenteManagement _patenteManagement = PatenteManagement(); 
-    List<Patente> _patentes = []; 
-    Future<List<Patente>> _getAllContribuablePatentes() async { 
-          String? addressContribuable = await getUserEthAddress();
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Historique des patentes"),
+      ),
+      body: FutureBuilder(
+          future: _getPatentesFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Erreur de chargement des _patentes.'));
+            } else if (snapshot.hasData && (snapshot.data!.isEmpty)) {
+              return Center(child: Text('Aucune patente enregistré.'));
+            } else {
+              _patentes = _patentes
+                  .where((element) => element.anneePaiement != 0)
+                  .toList();
+              if (_patentes.length != 0) {
+                return ListView.separated(
+                    itemCount: _patentes.length,
+                    separatorBuilder: (BuildContext context, int index) =>
+                        Divider(),
+                    itemBuilder: (BuildContext context, int index) {
+                      return Card(
+                        child: ListTile(
+                          leading: Text(
+                            _patentes[index].anneePaiement.toString(),
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          // trailing: _patentes[index].estPayee
+                          //     ? Column(
+                          //         children: [
+                          //           Icon(Icons.verified),
+                          //           Text("Payer"),
+                          //         ],
+                          //       )
+                          //     : Column(
+                          //         children: [
+                          //           Icon(Icons.verified_outlined),
+                          //           Text("Non Payer"),
+                          //         ],
+                          //       ),
+                          title: Text("Patentes N°${_patentes[index].id}"),
+                          subtitle: Text(
+                              "Montant payé : ${_patentes[index].sommePayee ?? 0}"),
+                          // onTap: () {
+                          //   showModalBottomSheet(
+                          //       context: context,
+                          //       builder: (BuildContext context) {
+                          //         return Row(
+                          //           children: [
+                          //             Expanded(
+                          //               child: Column(
+                          //                 children: [
+                          //                   SizedBox(
+                          //                     height: 20,
+                          //                     child: Center(
+                          //                       child: Text(
+                          //                         "Patente ${_patentes[index].anneePaiement}",
+                          //                         style: TextStyle(
+                          //                             fontSize: 16,
+                          //                             fontWeight:
+                          //                                 FontWeight.bold),
+                          //                       ),
+                          //                     ),
+                          //                   ),
+                          //                   Divider(),
+                          //                   _patentes[index].estPayee
+                          //                       ? Column(
+                          //                           children: [
+                          //                             Text(
+                          //                               "Déjà payé",
+                          //                               style: TextStyle(
+                          //                                   fontSize: Theme.of(
+                          //                                           context)
+                          //                                       .primaryTextTheme
+                          //                                       .headlineLarge!
+                          //                                       .fontSize),
+                          //                             ),
+                          //                             Icon(
+                          //                               Icons.verified,
+                          //                               size: 200,
+                          //                             ),
+                          //                           ],
+                          //                         )
+                          //                       : QrImageView(
+                          //                           data:
+                          //                               '${_patentes[index].id}',
+                          //                           version: QrVersions.auto,
+                          //                           size: 320,
+                          //                           gapless: false,
+                          //                         ),
+                          //                   Divider(),
+                          //                   Text(
+                          //                       "Montant : ${_patentes[index].droitFixe + _patentes[index].droitProportionnel}"),
+                          //                   Text(
+                          //                       "Faites scanner le code qr par le contribuable svp")
 
- List<Patente> _patenteByID = await _patenteManagement.getPatentesByContribuable(
-        EthereumAddress.fromHex(addressContribuable!));
-
-    List<Patente> _allPatentesPayed = await _patenteManagement.getPatentesEvents();
-       _patentes = _allPatentesPayed.where((element) => element.contribuableId == _patenteByID.first.contribuableId).toList(); 
-    return _patentes; 
-    }
-    return Container();
+                          //                   //  _patentes[index].estPayee ? Container() : GradientButtonFb4(text: "", onPressed: onPressed)
+                          //                 ],
+                          //               ),
+                          //             ),
+                          //           ],
+                          //         );
+                          //       });
+                          // },
+                        ),
+                      );
+                    });
+              } else {
+                return Center(child: Text('Aucune patente enregistré.'));
+              }
+            }
+          }),
+    );
   }
 }

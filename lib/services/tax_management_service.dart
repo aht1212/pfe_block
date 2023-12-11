@@ -17,10 +17,10 @@ import '../model/demandeOccupation_model.dart';
 
 class PatenteManagement {
   final String rpcUrl = defaultTargetPlatform == TargetPlatform.android
-      ? "http://192.168.100.3:7545"
+      ? "http://172.20.10.2:7545"
       : "http://127.0.0.1:7545";
   final String wsUrl = defaultTargetPlatform == TargetPlatform.android
-      ? "http://192.168.100.3:7545"
+      ? "http://172.20.10.2:7545"
       : "http://127.0.0.1:7545";
   final String privateKey =
       "0x6621c6728e92af21956c39b1d92e7ef56fb046df108fd6fc9a0c3eb491e8ac2c";
