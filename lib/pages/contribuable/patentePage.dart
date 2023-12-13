@@ -37,15 +37,19 @@ class _PatentePageState extends State<PatentePage> {
     List<Patente> _patentesByContribuable =
         await _patenteManagement.getPatentesByContribuable(
             EthereumAddress.fromHex(addressContribuable!));
-
+    _patentesByContribuable = _patentesByContribuable
+        .where((element) => element.contribuableId != 0)
+        .toList();
     _patenteEvent = await _patenteManagement.getPatentesEvents();
     for (int i = 0; i < _patentesByContribuable.length; i++) {
       List<Patente> patentePayedByContribuableByPatente = _patenteEvent
           .where((element) => element.id == _patentesByContribuable[i].id)
           .toList();
-      int totalAmountPaid = patentePayedByContribuableByPatente
-          .map<int>((patente) => patente.sommePayee ?? 0)
-          .fold(0, (sum, amount) => sum + amount);
+      int totalAmountPaid = patentePayedByContribuableByPatente.isEmpty
+          ? 0
+          : patentePayedByContribuableByPatente
+              .map<int>((patente) => patente.sommePayee ?? 0)
+              .fold(0, (sum, amount) => sum + amount);
       int montantDue = patentePayedByContribuableByPatente.first.droitFixe +
           patentePayedByContribuableByPatente.first.droitProportionnel;
 

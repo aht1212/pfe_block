@@ -83,6 +83,7 @@ contract TaxManagement {
         uint nombrePlaces;
         uint prixPlace;
         uint placesOccupees; // Mapping des places occupees par date
+        uint idAgent;
     }
     
     struct DemandeOccupation {
@@ -221,7 +222,6 @@ contract TaxManagement {
         });
         estContribuable[_ethAddress] = true;
         contribuables[contribuableCount] = nouveauContribuable;
-            // emit ContribuableAjoute(contribuableCount, _ethAddress, _nom, _prenom, _adresse, _email, _telephone, true);
         contribuableCount++;
 
     }
@@ -238,7 +238,6 @@ contract TaxManagement {
         });
         
         activitePrincipale[activitePrincipaleCount] = nouveauActivitePrincipale;
-    //  emit ActivitePrincipaleAjoute(activitePrincipaleCount, _nom, _droitFixeAnnuel, _description, true);
     activitePrincipaleCount++;
     }
 
@@ -445,14 +444,15 @@ function getPatenteByContribuable(address _contribuableAdress) public view retur
 return patenteList; 
 }
  
-    function ajouterMarche(string memory _nom, uint _nombrePlaces, uint _prixPlace) public seulementAdmin {
+    function ajouterMarche(string memory _nom, uint _nombrePlaces, uint _prixPlace, uint idAgent) public seulementAdmin {
         
         Marche memory nouveauMarche = Marche({
         id : marcheCount,
         nom : _nom,
         nombrePlaces : _nombrePlaces,
         prixPlace : _prixPlace,
-        placesOccupees : 0
+        placesOccupees : 0, 
+        idAgent : idAgent
         });
 
         marches[marcheCount] = nouveauMarche; 
