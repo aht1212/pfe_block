@@ -32,8 +32,8 @@ class RecouvrementManagementScreen extends StatelessWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Gestion du Recouvrement'),
-          bottom: TabBar(
+          title: const Text('Gestion du Recouvrement'),
+          bottom: const TabBar(
             tabs: [
               Tab(text: 'Demandes d\'Occupation'),
               Tab(text: 'Demandes Validées'),
@@ -61,7 +61,7 @@ class RecouvrementManagementScreen extends StatelessWidget {
   Widget _buildEventCard(BuildContext context, dynamic event) {
     return Card(
       elevation: 4.0,
-      margin: EdgeInsets.all(8.0),
+      margin: const EdgeInsets.all(8.0),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -69,12 +69,12 @@ class RecouvrementManagementScreen extends StatelessWidget {
           children: [
             Text(
               'ID Occupation: ${event.idoccupation}',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 8.0),
+            const SizedBox(height: 8.0),
             Text(
               'ID Marché: ${event.idMarche}\nDate Début: ${event.dateDebut}\nDate Fin: ${event.dateFin}\nID Contribuable: ${event.idContribuable}',
-              style: TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16),
             ),
           ],
         ),

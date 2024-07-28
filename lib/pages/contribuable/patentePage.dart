@@ -33,7 +33,7 @@ class _PatentePageState extends State<PatentePage> {
   List<Patente> _patentes = [];
   Future<List<Patente>> getPatenteImpaye() async {
     String? addressContribuable = await getUserEthAddress();
-
+ 
     List<Patente> _patentesByContribuable =
         await _patenteManagement.getPatentesByContribuable(
             EthereumAddress.fromHex(addressContribuable!));

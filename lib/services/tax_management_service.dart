@@ -17,10 +17,10 @@ import '../model/demandeOccupation_model.dart';
 
 class PatenteManagement {
   final String rpcUrl = defaultTargetPlatform == TargetPlatform.android
-      ? "http://192.168.100.3:7545"
+      ? "http://172.20.10.2:7545"
       : "http://127.0.0.1:7545";
   final String wsUrl = defaultTargetPlatform == TargetPlatform.android
-      ? "http://192.168.100.3:7545"
+      ? "http://172.20.10.2:7545"
       : "http://127.0.0.1:7545";
   final String privateKey =
       "0x6621c6728e92af21956c39b1d92e7ef56fb046df108fd6fc9a0c3eb491e8ac2c";
@@ -92,7 +92,7 @@ class PatenteManagement {
         contract: _contract!,
         function: agentFunction,
         params: [],
-        atBlock: BlockNum.current());
+        atBlock: const BlockNum.current());
     List<dynamic> agentsCall = contractCall[0];
     for (var element in agentsCall) {
       Agent a = Agent.fromEvent(element);
@@ -117,7 +117,7 @@ class PatenteManagement {
         contract: _contract!,
         function: contribuableFunction,
         params: [],
-        atBlock: BlockNum.current());
+        atBlock: const BlockNum.current());
     List<dynamic> contribuablesCall = contractCall[0];
     for (var element in contribuablesCall) {
       Contribuable a = Contribuable.fromEvent(element);
@@ -141,7 +141,7 @@ class PatenteManagement {
         contract: _contract!,
         function: contribuableFunction,
         params: [BigInt.from(contribuableId)],
-        atBlock: BlockNum.current());
+        atBlock: const BlockNum.current());
 
     print(contractCall);
 
@@ -164,7 +164,7 @@ class PatenteManagement {
         contract: _contract!,
         function: marcheFunction,
         params: [],
-        atBlock: BlockNum.current());
+        atBlock: const BlockNum.current());
     List<dynamic> marchesCall = contractCall[0];
     for (var element in marchesCall) {
       Marche a = Marche.fromEvent(element);
@@ -258,8 +258,8 @@ class PatenteManagement {
     final filter = FilterOptions.events(
       contract: _contract!,
       event: demandeoccupationAjouteEvent,
-      fromBlock: BlockNum.genesis(),
-      toBlock: BlockNum.current(),
+      fromBlock: const BlockNum.genesis(),
+      toBlock: const BlockNum.current(),
     );
     final logs = await _web3client!.getLogs(filter);
 
@@ -284,8 +284,8 @@ class PatenteManagement {
     final filter = FilterOptions.events(
       contract: _contract!,
       event: demandeOccupationAjouteEvent,
-      fromBlock: BlockNum.genesis(),
-      toBlock: BlockNum.current(),
+      fromBlock: const BlockNum.genesis(),
+      toBlock: const BlockNum.current(),
     );
     final logs = await _web3client!.getLogs(filter);
 
@@ -314,7 +314,7 @@ class PatenteManagement {
       contract: _contract!,
       function: activiteFunction,
       params: [],
-      atBlock: BlockNum.current(),
+      atBlock: const BlockNum.current(),
     );
 
     for (var element in contractCall[0]) {
@@ -628,7 +628,7 @@ class PatenteManagement {
       contract: _contract!,
       function: patenteFunction,
       params: [],
-      atBlock: BlockNum.current(),
+      atBlock: const BlockNum.current(),
     );
 
     for (var element in contractCall[0]) {
@@ -653,7 +653,7 @@ class PatenteManagement {
       contract: _contract!,
       function: patenteFunction,
       params: [],
-      atBlock: BlockNum.current(),
+      atBlock: const BlockNum.current(),
     );
 
     for (var element in contractCall[0]) {
@@ -671,15 +671,13 @@ class PatenteManagement {
     isLoading = true;
     await setup();
     final patenteFunction = _contract!.function("getPatenteByContribuable");
-    BigInt cId = await _web3client!.getChainId();
 
     List<Patente> patentes = [];
-    Credentials credential = EthPrivateKey.fromHex(privateKey);
     List contractCall = await _web3client!.call(
       contract: _contract!,
       function: patenteFunction,
       params: [_contribuablesAddress],
-      atBlock: BlockNum.current(),
+      atBlock: const BlockNum.current(),
     );
 
     for (var element in contractCall[0]) {
@@ -733,8 +731,8 @@ class PatenteManagement {
     final filter = FilterOptions.events(
       contract: _contract!,
       event: patenteAjouteEvent,
-      fromBlock: BlockNum.genesis(),
-      toBlock: BlockNum.current(),
+      fromBlock: const BlockNum.genesis(),
+      toBlock: const BlockNum.current(),
     );
     final logs = await _web3client!.getLogs(filter);
 
